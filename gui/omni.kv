@@ -1,0 +1,269 @@
+#:kivy 2.0.0
+<OmniGui>:
+    id: screenManager
+    BootScreen:
+        id: Boot_Screen
+    MainGUI:
+        id: Main_GUI
+    PatchPage1:
+        id: PatchPage_1
+    PatchPage2:
+        id: PatchPage_2
+    PatchPage3:
+        id: PatchPage_3
+    PatchPage4:
+        id: PatchPage_4
+    LedPage1:
+        id: LedPage_1
+    LedPage2:
+        id: LedPage_2
+    LedPage3:
+        id: LedPage_3
+    LedPage4:
+        id: LedPage_4
+    WaveFormPage:
+        id: Wave_Form_Page
+    Tone5Page:
+        id: Tone_5_Page
+    KnobValPage:
+        id: Knob_Val_Page
+    MidiLearnPage:
+        id: MIDI_Learn_Page
+
+<BootScreen>:
+    name: 'BootScreen'
+
+<MainGUI>:
+    name: 'MainGUI'
+    size_hint: 1,1
+    AnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'top'
+        
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: 2
+            padding: [1,1,1,1]
+            size_hint: 0.5, 0.4
+            Button:
+                id: Patch_selection
+                text: 'Synth Patch Selection'
+                size_hint: 1, 0.25
+                on_release: root.screenSel('PatchPage1')
+            Button:
+                id: Pattern_selection
+                text: 'LED Pattern Selection'
+                size_hint: 1, 0.25
+                on_release: root.screenSel('LedPage1')
+            Button:
+                id: SettingsBtn
+                text: 'Settings'
+                size_hint: 1, 0.25
+                on_release: app.open_settings()
+
+
+    # AnchorLayout:
+    #     id: WavePanel
+    #     anchor_x: 'right'
+    #     anchor_y: 'top'
+        # Button:
+        #     size_hint: 0.499, 0.395
+        #     opacity: 0
+        #     on_press: root.screenSel('WaveFormPage')
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'bottom'
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: 1, 0.6
+            Button:
+                text: 'Close Application\n    (Temporary)'
+                size_hint: 1, 0.6
+                on_release: exit()
+
+
+<PatchPage1>:
+    name: 'PatchPage1'
+    Label:
+        text: 'Patch Selection\n       Page 1'
+        size_hint: 1, 0.13
+        pos_hint: {'x':0, 'y':0.87}
+    Button:
+        text: 'Back'
+        size_hint: 0.08, 0.08
+        pos_hint: {'x':0.01, 'top':0.97}
+        on_release: root.screenSel('MainGUI')
+
+<PatchPage2>:
+    name: 'PatchPage2'
+    Label:
+        text: 'Patch Selection\n       Page 1'
+        size_hint: 1, 0.13
+        pos_hint: {'x':0, 'y':0.87}
+    Button:
+        text: '<'
+        size_hint: 0.08, 0.7
+        pos_hint: {'x':0.01, 'y':0.15}
+        on_release: root.screenSel('PatchPage1')
+    Button:
+        text: 'Back'
+        size_hint: 0.08, 0.08
+        pos_hint: {'x':0.01, 'top':0.97}
+        on_release: root.screenSel('MainGUI')
+<PatchPage3>:
+    name: 'PatchPage3'
+    Label:
+        text: 'Patch Selection\n       Page 1'
+        size_hint: 1, 0.13
+        pos_hint: {'x':0, 'y':0.87}
+    Button:
+        text: '<'
+        size_hint: 0.08, 0.7
+        pos_hint: {'x':0.01, 'y':0.15}
+        on_release: root.screenSel('PatchPage2')
+    Button:
+        text: 'Back'
+        size_hint: 0.08, 0.08
+        pos_hint: {'x':0.01, 'top':0.97}
+        on_release: root.screenSel('MainGUI')
+
+<PatchPage4>
+    name: 'PatchPage4'
+    Label:
+        text: 'Patch Selection\n       Page 1'
+        size_hint: 1, 0.13
+        pos_hint: {'x':0, 'y':0.87}
+    Button:
+        text: '<'
+        size_hint: 0.08, 0.7
+        pos_hint: {'x':0.01, 'y':0.15}
+        on_release: root.screenSel('PatchPage3')
+    Button:
+        text: 'Back'
+        size_hint: 0.08, 0.08
+        pos_hint: {'x':0.01, 'top':0.97}
+        on_release: root.screenSel('MainGUI')
+
+<LedPage1>
+    name: 'LedPage1'
+    Label:
+        text: 'Pattern Selection\n        Page 1'
+        size_hint: 1, 0.13
+        pos_hint: {'x':0, 'y':0.87}
+    Button:
+        text: 'Back'
+        size_hint: 0.08, 0.08
+        pos_hint: {'x':0.01, 'top':0.97}
+        on_release: root.screenSel('MainGUI')
+
+<LedPage2>
+    name: 'LedPage2'
+    Label:
+        text: 'Pattern Selection\n        Page 2'
+        size_hint: 1, 0.13
+        pos_hint: {'x':0, 'y':0.87}
+    Button:
+        text: '<'
+        size_hint: 0.08, 0.7
+        pos_hint: {'x':0.01, 'y':0.15}
+        on_release: root.screenSel('LedPage1')
+    Button:
+        text: 'Back'
+        size_hint: 0.08, 0.08
+        pos_hint: {'x':0.01, 'top':0.97}
+        on_release: root.screenSel('MainGUI')
+
+<LedPage3>
+    name: 'LedPage3'
+    Label:
+        text: 'Pattern Selection\n        Page 3'
+        size_hint: 1, 0.13
+        pos_hint: {'x':0, 'y':0.87}
+    Button:
+        text: '<'
+        size_hint: 0.08, 0.7
+        pos_hint: {'x':0.01, 'y':0.15}
+        on_release: root.screenSel('LedPage2')
+    Button:
+        text: 'Back'
+        size_hint: 0.08, 0.08
+        pos_hint: {'x':0.01, 'top':0.97}
+        on_release: root.screenSel('MainGUI')
+
+<LedPage4>
+    name: 'LedPage4'
+    Label:
+        text: 'Pattern Selection\n        Page 4'
+        size_hint: 1, 0.13
+        pos_hint: {'x':0, 'y':0.87}
+    Button:
+        text: '<'
+        size_hint: 0.08, 0.7
+        pos_hint: {'x':0.01, 'y':0.15}
+        on_release: root.screenSel('LedPage3')
+    Button:
+        text: 'Back'
+        size_hint: 0.08, 0.08
+        pos_hint: {'x':0.01, 'top':0.97}
+        on_release: root.screenSel('MainGUI')
+
+<WaveFormPage>
+    name: 'WaveFormPage'
+    BoxLayout:
+        orientation: 'horizontal'
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: 0.1, 1
+            Button:
+                text: 'Back'
+                size_hint: 0.9, 0.1
+                on_release: root.screenSel('MainGUI')
+            
+        #WaveForm:
+        #    size_hint: 0.9, 1
+
+<Tone5Page>
+    name: 'Tone5Page'
+    Label:
+        text: 'Knob Value Page'
+        pos_hint: {'x': 0.5 , 'y': 0.9}
+    Button:
+        text: 'Back'
+        size_hint_x: 0.1
+        size_hint_y: 0.1
+        pos_hint: {'x': 0.025, 'y': 0.05}
+        on_release: root.screenSel('MainGUI')
+    Button:
+        text: 'Map Mode'
+        size_hint_x: 0.1
+        size_hint_y: 0.1
+        pos_hint: {'x': 0.9, 'y':0}
+        on_release: root.learnMidi()
+        
+<KnobValPage>
+    name: 'KnobValPage'
+    Label:
+        text: 'Knob Value Page'
+        pos_hint: {'x': 0.5 , 'y': 0.9}
+    Button:
+        text: 'Back'
+        size_hint_x: 0.1
+        size_hint_y: 0.1
+        pos_hint: {'x': 0.025, 'y': 0.05}
+        on_release: root.screenSel('MainGUI')
+    Button:
+        text: 'Map Mode'
+        size_hint_x: 0.1
+        size_hint_y: 0.1
+        pos_hint: {'x': 0.9, 'y':0}
+        on_release: root.learnMidi()
+
+<MidiLearnPage>
+    name: 'MidiLearnPage'
+    Button:
+        text: 'Back'
+        size_hint_x: 0.15
+        size_hint_y: 0.15
+        pos_hint: {'x': 0.02, 'y': 0.05}
+        on_release: root.screenSel('MidiLearnPage')
+    
