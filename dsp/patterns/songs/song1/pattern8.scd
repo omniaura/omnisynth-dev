@@ -1,15 +1,8 @@
-/*
-desc: Simple 4/4 quarter note kick drum at 120 bpm.
-author: Omar Barazanji
-date: 5/27/2021
-*/
-
 ~bpm = (60/120)*4;
-a = Scale.minor;
-
+a = Scale.melodicMinor;
 
 Pdef (
-	\pattern1,
+	\pattern8,
 	Pbind(
 		\instrument, \tone3,
 		\scale, a,
@@ -17,7 +10,7 @@ Pdef (
 		\degree, Pseq((4..3)++(1..0) ,inf),
 		\root, 3,
 		\out, 0,
-		\amp, Pexprand(0.3, 0.4, inf),
+		\amp, Pexprand(0.08, 0.15, inf),
 		\gate, 1,
 		\mod_freq, Pwhite(102, 106, inf),
 		\lpf_cutoff, 20000, 
@@ -26,11 +19,11 @@ Pdef (
 		\decay_time, 0.3, 
 		\sustain, 0.4,
 		\release_time, 2.2,
-		\lin_start, 1000, 
-		\lin_stop, 2,
-		\lin_duration, 0.1,
+		\lin_start, 100, 
+		\lin_stop, 600,
+		\lin_duration, 5.0,
 		\bias, 0.0,
-		\dur, Pseq([1/4], inf),
+		\dur, Pseq([1/1], inf),
 		\stretch, ~bpm,
 	);
 ).quant_(~bpm);
