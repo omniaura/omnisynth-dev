@@ -8,8 +8,8 @@ Pdef (
 		\instrument, \tone8,
 		\scale, a,
 		\bend, ~bend.linlin(0,16383,-2,2),
-		\degree, Pseq((4..3)++(0..1) ,inf),
-		\root,3,
+		\degree, Pseq((9..8)++(6..7),inf),
+		\root,Prand([10,15,17,20], inf),
 		\out, 0,
 		\amp, Pexprand(0.04, 0.05, inf),
 		\gate, 1,
@@ -29,3 +29,4 @@ Pdef (
 		\stretch, ~bpm,
 	);
 ).quant_(~bpm);
+

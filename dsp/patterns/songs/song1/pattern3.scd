@@ -11,7 +11,7 @@ Pdef (
 		\root, 15,
 		\amp, Pexprand(0.1, 0.12, inf),
 		\gate, 1,
-		\mod_freq, Pexprand(1,100,inf),
+		\mod_freq, Pexprand(1000,3000,inf),
 		\mod_amp, 200,
 		\lpf_cutoff, 10000, 
 		\hpf_cutoff, 200,
