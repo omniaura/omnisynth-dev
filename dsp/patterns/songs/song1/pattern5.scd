@@ -17,7 +17,7 @@ Pdef (
 		\degree, Pseq((0..3), inf),
 		\root, Pexprand(-90,-50),
 		\out, 0,
-		\amp, Pexprand(0.05, 0.07, inf),
+		\amp, Pexprand(0.02, 0.03, inf),
 		\gate, 1,
 		\mod_freq, 0,
 		\mod_amp, 30,

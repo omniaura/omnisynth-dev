@@ -17,7 +17,7 @@ Pdef (
 		\degree, Pseq((4..3)++(1..0) ,inf),
 		\root, 3,
 		\out, 0,
-		\amp, Pexprand(0.3, 0.4, inf),
+		\amp, Pexprand(0.1, 0.2, inf),
 		\gate, 1,
 		\mod_freq, Pwhite(102, 106, inf),
 		\lpf_cutoff, 20000, 
