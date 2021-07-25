@@ -55,7 +55,7 @@ from main import Omni
 OmniSynth = Omni()
 
 from kivy.core.window import Window
-#Window.fullscreen = 'auto'
+Window.fullscreen = 'auto'
 #Window.show_cursor = False
 
 knobCoords = dict()
@@ -90,6 +90,9 @@ class MyScreens(Screen):
         sm.current = screenName
     def toneSel(self, tone):
         OmniSynth.synth_sel(tone, parentdir)
+    def exitSel(self, *args):
+        OmniSynth.exit_sel()
+        exit()
 
 # Extending the Button class for Tone Buttons
 class ToneButton(Button):

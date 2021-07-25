@@ -26,7 +26,7 @@ Pdef (
 		\gate, 1,
 		\mod_freq, Pexprand(5000, 6000, inf),
 		\mod_amp, 300,
-		\lpf_cutoff, 20000, 
+		\lpf_cutoff, 10000, 
 		\hpf_cutoff, 8000,
 		\attack_time, Pexprand(0.01, 0.02, inf), 
 		\decay_time, 0.06, 
