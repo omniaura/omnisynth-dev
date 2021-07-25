@@ -17,8 +17,10 @@ sys.path.append(parentdir)
 DIVISOR = 0
 from sys import platform
 if platform == "linux" or platform == "linux2":
+    Window.fullscreen = 'auto'
     DIVISOR = 4
 elif platform == "darwin":
+    Window.fullscreen = 'auto'
     DIVISOR = 8
 elif platform == "win32":
     DIVISOR = 8
@@ -55,7 +57,6 @@ from main import Omni
 OmniSynth = Omni()
 
 from kivy.core.window import Window
-Window.fullscreen = 'auto'
 #Window.show_cursor = False
 
 knobCoords = dict()
