@@ -168,6 +168,11 @@ class Omni():
         synth_path = os.path.abspath(directory).replace("\\", "/")
         self.sc.transmit(command, control, synth_name, synth_path)
 
+    def exit_sel(self):
+        command = "/omni"
+        control = "exitSel"
+        self.sc.transmit(command, control)
+
     # select filter and param value.
     def filter_sel(self, filter_name, value):
         command = "/%s" % self.synth

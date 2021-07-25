@@ -46,6 +46,10 @@ o = OSCFunc( {
 	        ~synth.postln;
 		}
 
+		{msg[1] == "exitSel".asSymbol} {
+			Server.killAll;
+		}
+
 		// compiles all SynthDef's.
 		{msg[1] == "compile".asSymbol} {
 			msg[2].asString.load;
