@@ -53,7 +53,8 @@ import matplotlib.pyplot as plt
 # used for triggering events
 from kivy.clock import Clock
 
-from main import Omni
+# requires omnisynth framework installed by pip
+from omnisynth.omni import Omni
 OmniSynth = Omni()
 
 from kivy.core.window import Window

@@ -28,7 +28,7 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 
 import asyncio
 import time
-from pi.omnimidi import OmniMidi
+from .omnimidi import OmniMidi
 
 class OmniCollider:
 
