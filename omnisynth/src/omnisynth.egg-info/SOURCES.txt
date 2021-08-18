@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+setup.cfg
+src/omnisynth/__init__.py
+src/omnisynth/omni.py
+src/omnisynth.egg-info/PKG-INFO
+src/omnisynth.egg-info/SOURCES.txt
+src/omnisynth.egg-info/dependency_links.txt
+src/omnisynth.egg-info/top_level.txt
+src/omnisynth/submodules/__init__.py
+src/omnisynth/submodules/omnimidi.py
+src/omnisynth/submodules/osc.py

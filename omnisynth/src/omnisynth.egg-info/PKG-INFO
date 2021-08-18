@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: omnisynth
+Version: 0.1.9
+Summary: OmniSynth digital synth framework.
+Home-page: https://github.com/omniaura/omnisynth-dev
+Author: Omar Barazanji
+Author-email: ozanji345@gmail.com
+License: UNKNOWN
+Project-URL: Bug Tracker, https://github.com/omniaura/omnisynth-dev/issues
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+
+# OmniSynth Package
+
