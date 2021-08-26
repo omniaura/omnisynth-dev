@@ -12,8 +12,8 @@ import os
 
 
 # Used for sending / receiving data from supercollider.
-from pi.osc import OmniCollider
-from pi.omnimidi import OmniMidi
+from .submodules.omnimidi import OmniMidi
+from .submodules.osc import OmniCollider
 
 class Omni():
 
