@@ -123,12 +123,12 @@ class Omni():
         #     temp = self.note_evnt_hist
         #     self.note_evnt_hist[nn] = (event,vel)  
 
-
     # compiles all synthDef's in dsp folder.
     def sc_compile(self, typeDef, *args):
+
         if not len(args) == 0: 
             parentDir = args[0]
-            directory = parentDir + "/dsp/%s/" % typeDef
+            directory = parentDir + "dsp/%s/" % typeDef
         else:
             directory = "dsp/%s/" % typeDef
         command = "/omni"
@@ -146,7 +146,7 @@ class Omni():
     def pattern_sel(self, pattern_name, action, *args):
         if not len(args) == 0: 
             parentDir = args[0]
-            directory = parentDir + "/dsp/patterns/songs/%s/%s.scd" % (self.song, pattern_name)
+            directory = parentDir + "dsp/patterns/songs/%s/%s.scd" % (self.song, pattern_name)
         else:
             directory = "dsp/patterns/songs/%s/%s.scd" % (self.song, pattern_name)
         command = "/omni"
@@ -159,7 +159,7 @@ class Omni():
     def synth_sel(self, synth_name, *args):
         if not len(args) == 0: 
             parentDir = args[0]
-            directory = parentDir + "/dsp/patches/%s.scd" % synth_name
+            directory = parentDir + "dsp/patches/%s.scd" % synth_name
         else:
             directory = "dsp/patches/%s.scd" % synth_name
         command = "/omni"
