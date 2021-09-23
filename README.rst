@@ -1,7 +1,8 @@
 OmniSynth Developer
 ===================
 
-Sound engine for playing, creating, and sequencing synthesizers. This is a closed source repository owned by Omni Aura, and it is for developing a fine-tuned framework for Python to SuperCollider communication.
+Sound engine for playing, creating, and sequencing synthesizers. This is a closed source repository owned by Omni Aura, 
+and it is for developing a fine-tuned framework for Python to SuperCollider communication.
 
 
 Installation Guide
@@ -62,7 +63,7 @@ Mac / Linux / Windows
 
 #. Install Supercollider 
 
-    * Visit the official `SuperCollider downloads page`_ to install the correct build for your OS. 
+    * Visit the official `SuperCollider downloads page`_ to install the correct build for your OS.
 
 #. Install OmniSynth
 
@@ -83,14 +84,16 @@ Mac / Linux / Windows
         garden install graph
         garden install matplotlib
 
-#. Running OmniSynth
+#. Build OmniSynth
 
-    * Start the GUI from root directory:
-
-    .. code-block:: console
-
-        cd omnisynth/
-        python gui/gui.py
+    1) Navigate into `omnisynth/`
+    1) Run `python -m pip install --upgrade build`
+    1) Run `python -m build`. You should see the output `Successfully built omnisynth-{x.y.z}.tar.gz and omnisynth-{x.y.z}-py3-none-any.whl`*
+    1) Navigate into `dist/`
+    1) There should be file with the name `omnisynth-{x.y.z}-py3-none-any.whl`. Run `pip install omnisynth-{x.y.z}-py3-none-any.whl`
+    1. You should see the output "Successfully installed omnisynth-{x.y.z}" in the console.
+    
+    ** {x.y.z} correspond to the current OmniSynth version
 
 .. _official build instructions: https://github.com/supercollider/supercollider/blob/develop/README_RASPBERRY_PI.md
 .. _latest 2019 version: https://downloads.raspberrypi.org/raspbian/images/raspbian-2019-09-30/
