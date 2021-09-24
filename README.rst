@@ -86,12 +86,12 @@ Mac / Linux / Windows
 
 #. Build OmniSynth
 
-    1) Navigate into `omnisynth/`
-    1) Run `python -m pip install --upgrade build`
-    1) Run `python -m build`. You should see the output `Successfully built omnisynth-{x.y.z}.tar.gz and omnisynth-{x.y.z}-py3-none-any.whl`*
-    1) Navigate into `dist/`
-    1) There should be file with the name `omnisynth-{x.y.z}-py3-none-any.whl`. Run `pip install omnisynth-{x.y.z}-py3-none-any.whl`
-    1. You should see the output "Successfully installed omnisynth-{x.y.z}" in the console.
+    #. Navigate into `omnisynth/`
+    #. Run `python -m pip install --upgrade build`
+    #. Run `python -m build`. You should see the output `Successfully built omnisynth-{x.y.z}.tar.gz and omnisynth-{x.y.z}-py3-none-any.whl`*
+    #. Navigate into `dist/`
+    #. There should be file with the name `omnisynth-{x.y.z}-py3-none-any.whl`. Run `pip install omnisynth-{x.y.z}-py3-none-any.whl`
+    #. You should see the output "Successfully installed omnisynth-{x.y.z}" in the console.
     
     ** {x.y.z} correspond to the current OmniSynth version
 
