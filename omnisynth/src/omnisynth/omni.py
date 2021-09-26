@@ -24,6 +24,7 @@ class Omni():
         self.sc.map_dispatcher("/control")
         self.sc.map_dispatcher("/noteOn")
         self.sc.map_dispatcher("/noteOff")
+        self.sc.map_dispatcher("/params")
 
         # current synth selected.
         self.synth = "tone1"
@@ -96,16 +97,17 @@ class Omni():
             value = self.cc_to_duration[int(inp)]
         return value
 
-
     # opens UDP stream for MIDI control messages.
     def open_stream(self, *args):
         self.sc.receive()
         try:
+            # grab first index (tag) if it exists
             event = self.sc.midi_evnt[0]
         except IndexError:
             event = ""
 
         if event == "/control":
+            # save entire message
             self.control_evnt = self.sc.midi_evnt
             if self.midi_learn_on:
                 self.midi_learn(self.control_evnt)
@@ -114,14 +116,7 @@ class Omni():
                     filter_name = self.knob_map[knob_addr]
                     raw_value = self.knob_table[knob_addr]
                     self.filter_sel(filter_name, raw_value)
-            self.sc.midi_evnt = []
-
-        # if event == "/noteOn" or event == "/noteOff":
-        #     self.note_evnt = self.sc.midi_evnt
-        #     nn = self.note_evnt[1]
-        #     vel = self.note_evnt[2]
-        #     temp = self.note_evnt_hist
-        #     self.note_evnt_hist[nn] = (event,vel)  
+            self.sc.midi_evnt = []  
 
     # compiles all synthDef's in dsp folder.
     def sc_compile(self, typeDef, *args):
