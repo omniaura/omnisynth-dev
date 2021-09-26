@@ -39,6 +39,10 @@ class OmniCollider:
         self.d = dispatcher.Dispatcher()
         self.note_evnt_hist = dict()
 
+        # dictionary holding all patches and their parameters.
+        #     organization: self.patch_param_table[(synth, param_num)] = [param_name, default_val]]
+        self.patch_param_table = dict()
+
     def rx_handler(self, *args):
         event = []
         for x in args:
@@ -46,6 +50,20 @@ class OmniCollider:
         self.midi_evnt = event
         if event[0] == "/noteOn" or event[0] == "/noteOff":
             self.teensy.send_note(event)
+        if event[0] == "/params":
+            param = event
+            synth = param[1]
+            param_num = param[2]
+            param_name = param[3]
+            param_default_val = param[4]
+
+            param_arr = [param_name, param_default_val]
+            if (synth, param_num) in self.patch_param_table:
+                if not param_arr in self.patch_param_table[(synth, param_num)]:
+                    self.patch_param_table[(synth, param_num)] = param_arr
+            else:
+                self.patch_param_table[(synth, param_num)] = [param_arr]        
+        
         print(event)
 
     async def loop(self):

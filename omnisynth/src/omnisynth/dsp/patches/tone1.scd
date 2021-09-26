@@ -4,6 +4,9 @@ author: Omar Barazanji
 date: 11/11/20
 */
 
+s.boot;
+n = NetAddr.new("127.0.0.1", 7771);
+
 ~bend = 8193;
 ~notes = Array.newClear(128);
 ~synth = "tone1";
@@ -13,6 +16,7 @@ date: 11/11/20
 ~decay_time = 0.3;
 ~sustain = 0.5;
 ~release_time = 1.0;
+~params = [];
 
 o = OSCFunc({
 
@@ -49,12 +53,12 @@ o = OSCFunc({
 		// base case - set synth to default patch.
 		{true} {~synth = ~synth};
 
-}, '/tone1').add;
+}, ~synth).add;
 
 /*
 Synth function.
 */
-SynthDef.new(\tone1, {
+d = SynthDef.new(~synth, {
 	arg freq=440, amp=0.6, gate=1, out=0, bend=0,
 		lpf_cutoff=20000, hpf_cutoff=20, attack_time=0.01,
 		decay_time=0.3, sustain=0.5, release_time=1.0, bias=0.0;
@@ -91,6 +95,15 @@ SynthDef.new(\tone1, {
 	Out.ar(out, sig);
 }).add;
 
+// send all parameters to OmniSynth upon compiling.
+~params = d.allControlNames;
+~params.do({ 
+	arg item, i; 
+	var param;
+	param = [i, item.name, item.defaultValue];
+	n.sendMsg("/params", ~synth, param[0], param[1], param[2]);
+});
+
 /*
 Note on function.
 */
@@ -98,7 +111,6 @@ MIDIdef.noteOn(\noteOnDef, {
 	arg vel, nn, chan, src;
 	var temp;
 	[vel, nn].postln;
-	"tone1?".postln;
 	n.sendMsg("/noteOn",nn,vel);
 	~notes[nn] = Synth.new(
 		~synth,
