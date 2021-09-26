@@ -62,7 +62,7 @@ class OmniCollider:
                 if not param_arr in self.patch_param_table[(synth, param_num)]:
                     self.patch_param_table[(synth, param_num)] = param_arr
             else:
-                self.patch_param_table[(synth, param_num)] = [param_arr]        
+                self.patch_param_table[(synth, param_num)] = param_arr       
         
         print(event)
 
