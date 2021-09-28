@@ -123,9 +123,9 @@ class Omni():
 
         if not len(args) == 0: 
             parentDir = args[0]
-            directory = parentDir + "dsp/%s/" % typeDef
+            directory = parentDir + "%s/" % typeDef
         else:
-            directory = "dsp/%s/" % typeDef
+            directory = "%s/" % typeDef
         command = "/omni"
         control = "compile"
         for patch in os.listdir(directory):
@@ -141,9 +141,9 @@ class Omni():
     def pattern_sel(self, pattern_name, action, *args):
         if not len(args) == 0: 
             parentDir = args[0]
-            directory = parentDir + "dsp/patterns/songs/%s/%s.scd" % (self.song, pattern_name)
+            directory = parentDir + "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
         else:
-            directory = "dsp/patterns/songs/%s/%s.scd" % (self.song, pattern_name)
+            directory = "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
         command = "/omni"
         control = "pdef_control"
         path = os.path.abspath(directory).replace("\\", "/")
@@ -154,9 +154,9 @@ class Omni():
     def synth_sel(self, synth_name, *args):
         if not len(args) == 0: 
             parentDir = args[0]
-            directory = parentDir + "dsp/patches/%s.scd" % synth_name
+            directory = parentDir + "patches/%s.scd" % synth_name
         else:
-            directory = "dsp/patches/%s.scd" % synth_name
+            directory = "patches/%s.scd" % synth_name
         command = "/omni"
         control = "synthSel"
         self.synth = synth_name
