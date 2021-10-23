@@ -43,6 +43,10 @@ class OmniCollider:
         #     organization: self.patch_param_table[(synth, param_num)] = [param_name, default_val]]
         self.patch_param_table = dict()
 
+        # dictionary holding all output devices and their index in SC.
+        #     organization: self.out_dev_table[dev_num] = out_dev_name 
+        self.out_dev_table = dict()
+
     def rx_handler(self, *args):
         event = []
         for x in args:
@@ -63,7 +67,11 @@ class OmniCollider:
                     self.patch_param_table[(synth, param_num)] = param_arr
             else:
                 self.patch_param_table[(synth, param_num)] = param_arr       
-        
+        if event[0] == "/outDev":
+            dev_num = event[1]
+            dev_name = event[2]
+            if dev_num not in self.out_dev_table:
+                self.out_dev_table[dev_num] = dev_name
         print(event)
 
     async def loop(self):

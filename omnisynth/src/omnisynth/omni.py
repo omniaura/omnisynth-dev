@@ -169,10 +169,11 @@ class Omni():
         control = "exitSel"
         self.sc.transmit(command, control)
 
-    def output_devices(self):
+    def out_dev_sel(self,dev_num):
         command = "/omni"
-        control = "outDev"
-        self.sc.transmit(command, control)
+        control = "outDevSel"
+        dev_name = self.sc.out_dev_table[dev_num]
+        self.sc.transmit(command, control, dev_name)
 
     # select filter and param value.
     def filter_sel(self, filter_name, value):
@@ -210,20 +211,4 @@ def quick_map(OmniSynth):
         if itr==len(OmniSynth.param_table): break
 
 
-if __name__ == "__main__":
-
-    # Boot sequence:
-    OmniSynth = Omni() # initialize Omni class.
-    OmniSynth.sc_compile("patches") # compiles all synthDefs.
-    OmniSynth.synth_sel("tone1") # selects first patch.
-    OmniSynth.midi_learn_on = True # turn on midi learn.
-
-    # Start Python OSC mainloop (this is an Event at 60 Hz in the GUI).
-    while (True):
-        OmniSynth.open_stream()
-    
-        # Midi knob map example:
-        #   After midi_learn is complete, the GUI runs:
-        #       OmniSynth.map_knob((7,1), "lpf")   
-        #   to map a knob on their midi_controller to a parameter.
 
