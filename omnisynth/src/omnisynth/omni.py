@@ -25,6 +25,7 @@ class Omni():
         self.sc.map_dispatcher("/noteOn")
         self.sc.map_dispatcher("/noteOff")
         self.sc.map_dispatcher("/params")
+        self.sc.map_dispatcher("/outDev")
 
         # current synth selected.
         self.synth = "tone1"
@@ -166,6 +167,11 @@ class Omni():
     def exit_sel(self):
         command = "/omni"
         control = "exitSel"
+        self.sc.transmit(command, control)
+
+    def output_devices(self):
+        command = "/omni"
+        control = "outDev"
         self.sc.transmit(command, control)
 
     # select filter and param value.
