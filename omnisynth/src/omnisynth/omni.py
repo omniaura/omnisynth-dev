@@ -176,7 +176,7 @@ class Omni():
         control = "outDevSel"
         if dev_num not in self.sc.out_dev_table:
             print(
-                f'[ERROR] in #out_dev_sel: Error when selecting device ${dev_num}: Device not found')
+                f'[ERROR] in #out_dev_sel: Error when selecting device {dev_num}: Device not found')
             return
         dev_name = self.sc.out_dev_table[dev_num]
         self.sc.transmit(command, control, dev_name)
