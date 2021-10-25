@@ -181,9 +181,6 @@ class Omni():
         dev_name = self.sc.out_dev_table[dev_num]
         self.sc.transmit(command, control, dev_name)
 
-    def sc_server_running(self):
-        return self.sc.serverRunning
-
     # select filter and param value.
     def filter_sel(self, filter_name, value):
         command = "/%s" % self.synth
