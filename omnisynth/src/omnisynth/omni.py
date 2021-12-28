@@ -15,6 +15,7 @@ import os
 from .submodules.omnimidi import OmniMidi
 from .submodules.osc import OmniCollider
 
+
 class Omni():
 
     def __init__(self):
@@ -58,16 +59,16 @@ class Omni():
         self.note_evnt_hist = dict()
 
         # Table that will be outputted to DAC & Mux.
-        self.cv_table = [[0 for x in range(8)] for y in range(4)] 
+        self.cv_table = [[0 for x in range(8)] for y in range(4)]
 
         # LUT for freq control messages, maps 0-127 to 20 - 20000 Hz.
-        self.cc_to_freq = np.linspace(20,20000,128).tolist()
+        self.cc_to_freq = np.linspace(20, 20000, 128).tolist()
 
         # LUT for adsr control messages, maps 0-127 to .001 - 1 (seconds or amplitude).
         self.cc_to_adsr = np.linspace(0.001, 2, 128).tolist()
 
         # LUT for linear envelope params.
-        self.cc_to_lin = np.linspace(1,3000, 128).tolist()
+        self.cc_to_lin = np.linspace(1, 3000, 128).tolist()
 
         # LUT for duration.
         self.cc_to_duration = np.linspace(0.001, 5, 128).tolist()
@@ -75,7 +76,7 @@ class Omni():
         # Variables For GUI.
         self.mapMode = False
         self.numPatch = 0
-        self.patchIndex = 0 #indexes for quick select on main screen
+        self.patchIndex = 0  # indexes for quick select on main screen
         self.patchListIndex = dict()
         self.patternListIndex = dict()
 
@@ -117,12 +118,12 @@ class Omni():
                     filter_name = self.knob_map[knob_addr]
                     raw_value = self.knob_table[knob_addr]
                     self.filter_sel(filter_name, raw_value)
-            self.sc.midi_evnt = []  
+            self.sc.midi_evnt = []
 
     # compiles all synthDef's in dsp folder.
     def sc_compile(self, typeDef, *args):
 
-        if not len(args) == 0: 
+        if not len(args) == 0:
             parentDir = args[0]
             directory = parentDir + "%s/" % typeDef
         else:
@@ -140,9 +141,10 @@ class Omni():
 
     # toggles and controls patterns created in supercollider
     def pattern_sel(self, pattern_name, action, *args):
-        if not len(args) == 0: 
+        if not len(args) == 0:
             parentDir = args[0]
-            directory = parentDir + "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
+            directory = parentDir + \
+                "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
         else:
             directory = "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
         command = "/omni"
@@ -153,7 +155,7 @@ class Omni():
 
     # turns on / off synthDef's from SC.
     def synth_sel(self, synth_name, *args):
-        if not len(args) == 0: 
+        if not len(args) == 0:
             parentDir = args[0]
             directory = parentDir + "patches/%s.scd" % synth_name
         else:
@@ -169,9 +171,13 @@ class Omni():
         control = "exitSel"
         self.sc.transmit(command, control)
 
-    def out_dev_sel(self,dev_num):
+    def out_dev_sel(self, dev_num):
         command = "/omni"
         control = "outDevSel"
+        if dev_num not in self.sc.out_dev_table:
+            print(
+                f'[ERROR] in #out_dev_sel: Error when selecting device {dev_num}: Device not found')
+            return
         dev_name = self.sc.out_dev_table[dev_num]
         self.sc.transmit(command, control, dev_name)
 
@@ -179,11 +185,11 @@ class Omni():
     def filter_sel(self, filter_name, value):
         command = "/%s" % self.synth
         control = "filterSel"
-        real_value = self.value_map(filter_name,value)
+        real_value = self.value_map(filter_name, value)
         if filter_name in self.knob_map_hist and self.knob_map_hist[filter_name] != value:
             self.sc.transmit(command, control, filter_name, real_value)
             self.knob_map_hist[filter_name] = value
-        elif filter_name not in self.knob_map_hist: # if first instance
+        elif filter_name not in self.knob_map_hist:  # if first instance
             self.sc.transmit(command, control, filter_name, real_value)
             self.knob_map_hist[filter_name] = value
 
@@ -193,22 +199,22 @@ class Omni():
             val = midi_msg[1]
             src = midi_msg[2]
             chan = midi_msg[3]
-            self.knob_table[(src,chan)] = val
+            self.knob_table[(src, chan)] = val
 
     # maps a knob to an SC parameter.
     # params:
-    #     knob_addr = (src, chan) 
+    #     knob_addr = (src, chan)
     #     filter_name = "lpf" (for example)
     def map_knob(self, knob_addr, filter_name):
         self.knob_map[knob_addr] = filter_name
 
 # Quickly maps a table of param names to all knobs needed.
+
+
 def quick_map(OmniSynth):
-    itr=0
+    itr = 0
     for key, value in OmniSynth.knob_table.items():
         OmniSynth.map_knob(key, OmniSynth.param_table[itr])
         itr += 1
-        if itr==len(OmniSynth.param_table): break
-
-
-
+        if itr == len(OmniSynth.param_table):
+            break
