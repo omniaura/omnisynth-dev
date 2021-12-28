@@ -21,7 +21,7 @@ class Omni():
     def __init__(self):
 
         # initialize OSC module for UDP communication with Supercollider.
-        self.sc = OmniCollider(17)
+        self.sc = OmniCollider()
         self.sc.map_dispatcher("/control")
         self.sc.map_dispatcher("/noteOn")
         self.sc.map_dispatcher("/noteOff")
