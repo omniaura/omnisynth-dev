@@ -1,9 +1,7 @@
 OmniSynth Developer
 ===================
 
-Sound engine for playing, creating, and sequencing synthesizers. This is a closed source repository owned by Omni Aura, 
-and it is for developing a fine-tuned framework for Python to SuperCollider communication.
-
+Sound engine for playing, creating, and sequencing synthesizers.
 
 Installation Guide
 ==================
