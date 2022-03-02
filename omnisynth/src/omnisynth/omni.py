@@ -14,7 +14,7 @@ import os
 # Used for sending / receiving data from supercollider.
 from .submodules.omnimidi import OmniMidi
 from .submodules.osc import OmniCollider
-
+from .submodules.server import Server
 
 class Omni():
 
