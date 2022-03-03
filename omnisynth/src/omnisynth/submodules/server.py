@@ -14,10 +14,10 @@ app = Flask(__name__)
 def post_handler():
     return "<p>Hello, World!</p>"
 
-class Server:
+class Server():
 
     def __init__(self):
-        self.response = []
+        self.app = app
         
     
 if __name__ == "__main__":
