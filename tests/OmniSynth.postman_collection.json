@@ -26,6 +26,30 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Compiling Patches",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/patches?compileAllPatches=1",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"patches"
+					],
+					"query": [
+						{
+							"key": "compileAllPatches",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

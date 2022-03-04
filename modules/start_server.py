@@ -1,4 +1,4 @@
-from omnisynth.submodules.server import Server
+from server import Server
 
 def start_server():
     server = Server()
