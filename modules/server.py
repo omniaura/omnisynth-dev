@@ -30,15 +30,15 @@ def omnisynth_handler():
         OmniSynth.synth_sel("tone1", OMNISYNTH_PATH) # selects first patch.
         return "<p>Compiling all synth patches</p>"
 
-    elif 'fileName' in requests: # assume full path (client must follow!)
+    elif 'patchName' in requests: # assume full path (client must follow!)
 
-        patch = str(request.args.get('fileName'))
+        patch = str(request.args.get('patchName'))
         OmniSynth.synth_sel(patch, OMNISYNTH_PATH)
         return f"<p>Compiled {patch}</p>"
 
     else:
 
-        return "<p>Invalid Query. Must provide compileAllPatches or fileName.</p>"
+        return "<p>Invalid Query. Must provide compileAllPatches or patchName.</p>"
 
 
 class Server():
