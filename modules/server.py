@@ -32,9 +32,9 @@ def omnisynth_handler():
 
     elif 'fileName' in requests: # assume full path (client must follow!)
 
-        fname = str(request.args.get('fileName'))
-        OmniSynth.sc_compile(fname)
-        return f"<p>Compiled {fname}</p>"
+        patch = str(request.args.get('fileName'))
+        OmniSynth.synth_sel(patch, OMNISYNTH_PATH)
+        return f"<p>Compiled {patch}</p>"
 
     else:
 
