@@ -32,4 +32,4 @@ def start_server():
 
 if __name__ == "__main__":
     start_server()
-    # start_sc(False)
+    start_sc(True)

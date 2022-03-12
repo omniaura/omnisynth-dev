@@ -25,13 +25,19 @@ def post_handler():
 def omnisynth_handler():
     requests = request.args
     if 'compileAllPatches' in requests:
+
         OmniSynth.sc_compile(OMNISYNTH_PATH+"patches") # compiles all synthDefs.
+        OmniSynth.synth_sel("tone1", OMNISYNTH_PATH) # selects first patch.
         return "<p>Compiling all synth patches</p>"
+
     elif 'fileName' in requests: # assume full path (client must follow!)
+
         fname = str(request.args.get('fileName'))
         OmniSynth.sc_compile(fname)
         return f"<p>Compiled {fname}</p>"
+
     else:
+
         return "<p>Invalid Query. Must provide compileAllPatches or fileName.</p>"
 
 
