@@ -33,7 +33,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patches?compileAllPatches=1",
+					"raw": "localhost:42042/patches?compileAllPatches=1&fileName=C:\\Users\\ozanj\\Desktop\\Code\\omnisynth-dsp\\patches\\tone1.scd",
 					"host": [
 						"localhost"
 					],
@@ -45,6 +45,10 @@
 						{
 							"key": "compileAllPatches",
 							"value": "1"
+						},
+						{
+							"key": "fileName",
+							"value": "C:\\Users\\ozanj\\Desktop\\Code\\omnisynth-dsp\\patches\\tone1.scd"
 						}
 					]
 				}
