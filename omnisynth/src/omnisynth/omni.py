@@ -14,7 +14,6 @@ import os
 # Used for sending / receiving data from supercollider.
 from .submodules.omnimidi import OmniMidi
 from .submodules.osc import OmniCollider
-from .submodules.server import Server
 
 class Omni():
 
@@ -134,6 +133,7 @@ class Omni():
             filedir = directory + patch
             path = os.path.abspath(filedir).replace("\\", "/")
             self.sc.transmit(command, control, path)
+        return self.sc.patch_param_table
 
     # saves state of which song is currently selected.
     def song_sel(self, song_name):

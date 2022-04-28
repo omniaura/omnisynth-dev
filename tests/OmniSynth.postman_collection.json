@@ -26,6 +26,34 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Compiling Patches",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/patches?compileAllPatches=1&patchName=C:\\Users\\ozanj\\Desktop\\Code\\omnisynth-dsp\\patches\\tone1.scd",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"patches"
+					],
+					"query": [
+						{
+							"key": "compileAllPatches",
+							"value": "1"
+						},
+						{
+							"key": "patchName",
+							"value": "C:\\Users\\ozanj\\Desktop\\Code\\omnisynth-dsp\\patches\\tone1.scd"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
