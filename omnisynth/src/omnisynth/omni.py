@@ -133,6 +133,7 @@ class Omni():
             filedir = directory + patch
             path = os.path.abspath(filedir).replace("\\", "/")
             self.sc.transmit(command, control, path)
+        return self.sc.patch_param_table
 
     # saves state of which song is currently selected.
     def song_sel(self, song_name):

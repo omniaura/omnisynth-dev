@@ -30,6 +30,9 @@ import asyncio
 import time
 from .omnimidi import OmniMidi
 
+import redis
+r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
+
 DELAY_MS = 16
 
 
@@ -67,13 +70,18 @@ class OmniCollider:
             if (synth, param_num) in self.patch_param_table:
                 if not param_arr in self.patch_param_table[(synth, param_num)]:
                     self.patch_param_table[(synth, param_num)] = param_arr
+                    r.set('patchTable', str(self.patch_param_table))
             else:
                 self.patch_param_table[(synth, param_num)] = param_arr
+                r.set('patchTable', str(self.patch_param_table))
+
         if event[0] == "/outDev":
             dev_num = event[1]
             dev_name = event[2]
             if dev_num not in self.out_dev_table:
                 self.out_dev_table[dev_num] = dev_name
+            r.set('outDevTable', str(self.out_dev_table))
+            
         print(event)
 
     async def loop(self):
