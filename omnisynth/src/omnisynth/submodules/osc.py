@@ -1,8 +1,7 @@
 '''
 Open Sound Control module for communicating with Supercollider.
 
-author: Omar Barazanji
-date: 1/17/2021
+author: Omar Barazanji (omar@omniaura.co)
 
 Python 3.7.x
 
@@ -33,7 +32,7 @@ from .omnimidi import OmniMidi
 import redis
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
-DELAY_MS = 16
+DELAY_MS = 50
 
 
 class OmniCollider:

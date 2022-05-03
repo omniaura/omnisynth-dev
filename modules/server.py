@@ -1,11 +1,13 @@
 """
 This server is an API around the OSC functionality and state managament 
 for clients to utilize.
+
+author: Omar Barazanji (omar@omniaura.co)
 """
 
 import redis
 import subprocess
-from flask_socketio import SocketIO
+import psutil
 from flask import Flask
 from flask import request
 
@@ -47,7 +49,7 @@ def patches_handler():
         elif 'patchName' in requests: # assume full path (client must follow!)
 
             patch = str(request.args.get('patchName'))
-            # OmniSynth.synth_sel(patch, OMNISYNTH_PATH)
+            OI.OmniSynth.synth_sel(patch, OMNISYNTH_PATH)
             return f"<p>Compiled {patch}</p>"
         
         else:
@@ -64,8 +66,6 @@ def patches_handler():
     
 
 
-
-
 # start supercollider server and simulates the GUI's event loop as `While True`.
 @app.route("/supercollider", methods=['POST', 'GET'])
 def supercollider_handler():
@@ -74,16 +74,16 @@ def supercollider_handler():
         if 'startServer' in requests:
             sc_main = OMNISYNTH_PATH + "main.scd"
             subprocess.Popen(["sclang", sc_main])
-            # initialize OmniSynth instance
-            # OmniSynth.sc_compile(OMNISYNTH_PATH+"patches") # compiles all synthDefs.
-            # OmniSynth.synth_sel("tone1", OMNISYNTH_PATH) # selects first patch.
-            # OmniSynth.midi_learn_on = True # turn on midi learn.
-
-            return "<p>Started server</p>"
+            return "<p>Starting server</p>"
 
         elif 'killServer' in requests:
 
-            # OmniSynth.exit_sel()
+            OI.OmniSynth.exit_sel() # kills scsynth 
+            for proc in psutil.process_iter():
+                name = proc.name()
+                if 'sclang' in name:
+                    print('killing sclang process...')
+                    proc.kill() # kills sclang
             return "<p>Server killed</p>"
 
         else:
@@ -91,9 +91,9 @@ def supercollider_handler():
             return "<p>Invalid Query. Must provide startServer or killServer.</p>"
             
     elif request.method == "GET":
-        pass
-        # print(OmniSynth.sc.patch_param_table)
-        # return OmniSynth.sc.patch_param_table
+        if 'getOutDev' in requests:
+            out_devices = r.get('outDevTable')
+            return out_devices
 
 
 
