@@ -1,8 +1,7 @@
 """
 Main / Top Level for the OmniAura Synthesizer.
 
-author: Omar Barazanji
-date: 11/12/20
+author: Omar Barazanji (omar@omniaura.co)
 
 Python 3.7.x
 """

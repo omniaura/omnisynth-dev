@@ -11,7 +11,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:5000/",
+					"raw": "http://127.0.0.1:42042/",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -19,7 +19,7 @@
 						"0",
 						"1"
 					],
-					"port": "5000",
+					"port": "42042",
 					"path": [
 						""
 					]
@@ -28,12 +28,12 @@
 			"response": []
 		},
 		{
-			"name": "Compiling Patches",
+			"name": "Patches",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patches?compileAllPatches=1&patchName=C:\\Users\\ozanj\\Desktop\\Code\\omnisynth-dsp\\patches\\tone1.scd",
+					"raw": "localhost:42042/patches?compileAllPatches=1",
 					"host": [
 						"localhost"
 					],
@@ -48,8 +48,117 @@
 						},
 						{
 							"key": "patchName",
-							"value": "C:\\Users\\ozanj\\Desktop\\Code\\omnisynth-dsp\\patches\\tone1.scd"
+							"value": "tone1",
+							"disabled": true
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Patches",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/patches?compileAllPatches=1",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"patches"
+					],
+					"query": [
+						{
+							"key": "compileAllPatches",
+							"value": "1"
+						},
+						{
+							"key": "patchName",
+							"value": "tone1",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Supercollider",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/supercollider?startServer=1",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"supercollider"
+					],
+					"query": [
+						{
+							"key": "startServer",
+							"value": "1",
+							"description": "starts the supercollider server."
+						},
+						{
+							"key": "killServer",
+							"value": "1",
+							"description": "kills the supercollider server.",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Supercollider",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/supercollider?getOutDev=1",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"supercollider"
+					],
+					"query": [
+						{
+							"key": "getOutDev",
+							"value": "1",
+							"description": "returns available output devices from supercollider."
+						},
+						{
+							"key": "",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "omnisynth",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/omnisynth",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"omnisynth"
 					]
 				}
 			},
