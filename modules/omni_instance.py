@@ -23,6 +23,7 @@ class OmniInstance:
         # r.set('patchTable', str(table))
 
     def open(self):
+        self.OmniSynth.midi_learn_on = True
         self.OmniSynth.open_stream()
 
 

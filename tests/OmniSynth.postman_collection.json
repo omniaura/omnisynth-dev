@@ -33,7 +33,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patches?compileAllPatches=1",
+					"raw": "localhost:42042/patches?patchName=tone910",
 					"host": [
 						"localhost"
 					],
@@ -44,12 +44,41 @@
 					"query": [
 						{
 							"key": "compileAllPatches",
-							"value": "1"
+							"value": "1",
+							"disabled": true
 						},
 						{
 							"key": "patchName",
-							"value": "tone1",
+							"value": "tone910"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Patterns",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/patterns?stopPattern=pattern1",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"patterns"
+					],
+					"query": [
+						{
+							"key": "startPattern",
+							"value": "pattern1",
 							"disabled": true
+						},
+						{
+							"key": "stopPattern",
+							"value": "pattern1"
 						}
 					]
 				}
@@ -62,7 +91,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patches?compileAllPatches=1",
+					"raw": "localhost:42042/patches?patchTable=",
 					"host": [
 						"localhost"
 					],
@@ -72,13 +101,8 @@
 					],
 					"query": [
 						{
-							"key": "compileAllPatches",
-							"value": "1"
-						},
-						{
-							"key": "patchName",
-							"value": "tone1",
-							"disabled": true
+							"key": "patchTable",
+							"value": ""
 						}
 					]
 				}
@@ -149,16 +173,46 @@
 		{
 			"name": "omnisynth",
 			"request": {
-				"method": "POST",
+				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/omnisynth",
+					"raw": "localhost:42042/omnisynth?getKnobTable=1",
 					"host": [
 						"localhost"
 					],
 					"port": "42042",
 					"path": [
 						"omnisynth"
+					],
+					"query": [
+						{
+							"key": "getKnobTable",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "omnisynth",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/omnisynth?getKnobTable=1",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"omnisynth"
+					],
+					"query": [
+						{
+							"key": "getKnobTable",
+							"value": "1"
+						}
 					]
 				}
 			},
