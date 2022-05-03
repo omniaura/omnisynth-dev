@@ -6,9 +6,11 @@ author: Omar Barazanji (omar@omniaura.co)
 Python 3.7.x
 """
 
+import redis
 import numpy as np
 import os
 
+r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
 # Used for sending / receiving data from supercollider.
 from .submodules.omnimidi import OmniMidi
@@ -199,6 +201,7 @@ class Omni():
             src = midi_msg[2]
             chan = midi_msg[3]
             self.knob_table[(src, chan)] = val
+            r.set('knobTable', str(self.knob_table))
 
     # maps a knob to an SC parameter.
     # params:

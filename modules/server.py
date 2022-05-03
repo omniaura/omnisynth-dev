@@ -18,9 +18,6 @@ from constants import OMNISYNTH_PATH
 import omni_instance
 OI = omni_instance.OmniInstance()
 
-# handles communication with the omnisytnth service
-def omnisynth_service(msg):
-    pass
 
 # postman as POST Test
 @app.route("/", methods=['POST'])
@@ -28,13 +25,37 @@ def post_handler():
     return "<p>Hello, World!</p>"
 
 
-# used to test if omnisynth service is running
+#
 @app.route("/omnisynth", methods=['POST', 'GET'])
 def omnisynth_handler():
     requests = request.args
     if request.method == "POST":
-        
         return f"<p>POST to OmniSynth Instance</p>"
+
+    if request.method == "GET":
+        if 'getKnobTable' in requests:
+            knob_table = r.get('knobTable')
+            return knob_table
+
+@app.route("/patterns", methods=['POST', 'GET'])
+def patterns_handler():
+    requests = request.args
+
+    if request.method == 'POST':
+        if 'startPattern' in requests:
+            pattern = str(request.args.get('startPattern'))
+            OI.OmniSynth.pattern_sel(pattern, 'start', OMNISYNTH_PATH)
+            return f"<p>Starting {pattern}</p>"
+
+        elif 'stopPattern' in requests: 
+
+            pattern = str(request.args.get('stopPattern'))
+            OI.OmniSynth.pattern_sel(pattern, 'stop', OMNISYNTH_PATH)
+            return f"<p>Stopping {pattern}</p>"
+        
+    elif request.method == 'GET':
+        pass
+
 
 
 @app.route("/patches", methods=['POST', 'GET'])
@@ -46,7 +67,7 @@ def patches_handler():
             OI.compile_patches()
             return "<p>Compiling All Patches</p>"
 
-        elif 'patchName' in requests: # assume full path (client must follow!)
+        elif 'patchName' in requests: 
 
             patch = str(request.args.get('patchName'))
             OI.OmniSynth.synth_sel(patch, OMNISYNTH_PATH)
