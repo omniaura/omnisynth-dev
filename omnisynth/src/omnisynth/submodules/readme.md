@@ -13,7 +13,7 @@
 	1.1. `$env:FLASK_APP = "server"` 
 	2.1. The above tells Flask to look for server.py where `flask run` is called.
 2) Running:
-	3.1. Use `flask run` in server.py's directory. 
+	3.1. Run main.py located in root directory of omnisynth-dev/. 
 
 # Server Request Handler
 * The request handler will be responsible for parsing requests and performing the requested actions / collect requested data from the OmniSynth instance.

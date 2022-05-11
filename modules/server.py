@@ -25,7 +25,7 @@ def post_handler():
     return "<p>Hello, World!</p>"
 
 
-#
+# making requests to the OmniSynth instance
 @app.route("/omnisynth", methods=['POST', 'GET'])
 def omnisynth_handler():
     requests = request.args
