@@ -12,6 +12,7 @@ sources:
 
 # used for receiving via OSC
 import argparse
+import json
 from pythonosc import dispatcher
 from pythonosc import osc_server
 
@@ -69,17 +70,17 @@ class OmniCollider:
             if (synth, param_num) in self.patch_param_table:
                 if not param_arr in self.patch_param_table[(synth, param_num)]:
                     self.patch_param_table[(synth, param_num)] = param_arr
-                    r.set('patchTable', str(self.patch_param_table))
+                    r.set('patchTable', json.dumps(self.patch_param_table))
             else:
                 self.patch_param_table[(synth, param_num)] = param_arr
-                r.set('patchTable', str(self.patch_param_table))
+                r.set('patchTable', json.dumps(str(self.patch_param_table)))
 
         if event[0] == "/outDev":
             dev_num = event[1]
             dev_name = event[2]
             if dev_num not in self.out_dev_table:
                 self.out_dev_table[dev_num] = dev_name
-            r.set('outDevTable', str(self.out_dev_table))
+            r.set('outDevTable', json.dumps(self.out_dev_table))
             
         print(event)
 

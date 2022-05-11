@@ -3,6 +3,8 @@ requires = [
     "setuptools>=42",
     "wheel",
     "python-osc>=1.7.4",
-    
+    "Flask>=2.1.2",
+    "redis>=4.1.2",
+    "py-midi"
 ]
 build-backend = "setuptools.build_meta"

@@ -7,6 +7,7 @@ Python 3.7.x
 """
 
 import redis
+import json
 import numpy as np
 import os
 
@@ -201,7 +202,7 @@ class Omni():
             src = midi_msg[2]
             chan = midi_msg[3]
             self.knob_table[(src, chan)] = val
-            r.set('knobTable', str(self.knob_table))
+            r.set('knobTable', json.dumps(self.knob_table))
 
     # maps a knob to an SC parameter.
     # params:
@@ -211,8 +212,6 @@ class Omni():
         self.knob_map[knob_addr] = filter_name
 
 # Quickly maps a table of param names to all knobs needed.
-
-
 def quick_map(OmniSynth):
     itr = 0
     for key, value in OmniSynth.knob_table.items():
