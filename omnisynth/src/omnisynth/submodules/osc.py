@@ -74,8 +74,7 @@ class OmniCollider:
                     r.set('patchTable', json.dumps(self.patch_param_table))
             else:
                 self.patch_param_table[key] = param_arr
-                r.set('patchTable', json.dumps(str(self.patch_param_table)))
-
+                r.set('patchTable', json.dumps(self.patch_param_table))
 
 
         if event[0] == "/outDev":
