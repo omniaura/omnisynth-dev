@@ -66,14 +66,14 @@ class OmniCollider:
             param_name = param[3]
             param_default_val = param[4]
 
-            param_arr = [param_name, param_default_val]
-            key = str(synth) + '_' + str(param_num)
+            param_arr = {'param_num': param_num, 'param': [param_name, param_default_val]}
+            key = synth
             if key in self.patch_param_table:
                 if not param_arr in self.patch_param_table[key]:
-                    self.patch_param_table[key] = param_arr
+                    self.patch_param_table[key].append(param_arr)
                     r.set('patchTable', json.dumps(self.patch_param_table))
             else:
-                self.patch_param_table[key] = param_arr
+                self.patch_param_table[key] = [param_arr]
                 r.set('patchTable', json.dumps(self.patch_param_table))
 
 
