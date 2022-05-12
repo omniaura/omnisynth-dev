@@ -10,7 +10,7 @@ import subprocess
 import psutil
 from flask import Flask
 from flask import request
-
+import json
 app = Flask(__name__)
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
@@ -80,7 +80,7 @@ def patches_handler():
     elif request.method == 'GET':
         if 'patchTable' in requests:
             table = r.get('patchTable')
-            return table
+            return json.loads(table)
     else:
 
         return "<p>Invalid Query. Must provide compileAllPatches or patchName.</p>"
