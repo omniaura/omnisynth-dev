@@ -47,6 +47,7 @@ class OmniCollider:
         # dictionary holding all patches and their parameters.
         #     organization: self.patch_param_table[(synth, param_num)] = [param_name, default_val]]
         self.patch_param_table = dict()
+        r.delete('patchTable')
 
         # dictionary holding all output devices and their index in SC.
         #     organization: self.out_dev_table[dev_num] = out_dev_name

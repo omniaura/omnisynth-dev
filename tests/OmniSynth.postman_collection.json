@@ -33,7 +33,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patches?patchName=tone910",
+					"raw": "localhost:42042/patches?patchName=tone1",
 					"host": [
 						"localhost"
 					],
@@ -49,7 +49,7 @@
 						},
 						{
 							"key": "patchName",
-							"value": "tone910"
+							"value": "tone1"
 						}
 					]
 				}
@@ -91,7 +91,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patches?patchTable=",
+					"raw": "localhost:42042/patches?patchTable=1",
 					"host": [
 						"localhost"
 					],
@@ -102,7 +102,7 @@
 					"query": [
 						{
 							"key": "patchTable",
-							"value": ""
+							"value": "1"
 						}
 					]
 				}
@@ -141,77 +141,69 @@
 			"response": []
 		},
 		{
-			"name": "Supercollider",
+			"name": "omnisynth",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/supercollider?getOutDev=1",
+					"raw": "localhost:42042/omnisynth?getKnobTable=1",
 					"host": [
 						"localhost"
 					],
 					"port": "42042",
 					"path": [
-						"supercollider"
+						"omnisynth"
 					],
 					"query": [
 						{
-							"key": "getOutDev",
-							"value": "1",
-							"description": "returns available output devices from supercollider."
+							"key": "getKnobTable",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "omnisynth",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/omnisynth?mapKnob={\"knobSource\" : 7, \"knobChan\" : 0,  \"filterName\" : \"attack\"}",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"omnisynth"
+					],
+					"query": [
+						{
+							"key": "mapKnob",
+							"value": "{\"knobSource\" : 7, \"knobChan\" : 0,  \"filterName\" : \"attack\"}",
+							"description": "map a midi or virtual knob/slider to parameter."
 						},
 						{
-							"key": "",
-							"value": "",
+							"key": "mapKnob",
+							"value": "{\"knobSource\" : 7, \"knobChan\" : 1,  \"filterName\" : \"decay\"}",
+							"description": "map a midi or virtual knob/slider to parameter.",
 							"disabled": true
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "omnisynth",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:42042/omnisynth?getKnobTable=1",
-					"host": [
-						"localhost"
-					],
-					"port": "42042",
-					"path": [
-						"omnisynth"
-					],
-					"query": [
+						},
 						{
-							"key": "getKnobTable",
-							"value": "1"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "omnisynth",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:42042/omnisynth?getKnobTable=1",
-					"host": [
-						"localhost"
-					],
-					"port": "42042",
-					"path": [
-						"omnisynth"
-					],
-					"query": [
+							"key": "mapKnob",
+							"value": "{\"knobSource\" : 7, \"knobChan\" : 2,  \"filterName\" : \"sustain\"}",
+							"disabled": true
+						},
 						{
-							"key": "getKnobTable",
-							"value": "1"
+							"key": "mapKnob",
+							"value": "{\"knobSource\" : 7, \"knobChan\" : 3,  \"filterName\" : \"release\"}",
+							"disabled": true
+						},
+						{
+							"key": "mapKnob",
+							"value": "{\"knobSource\" : 7, \"knobChan\" : 4,  \"filterName\" : \"mod_freq\"}",
+							"disabled": true
 						}
 					]
 				}
