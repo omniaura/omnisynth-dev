@@ -5,6 +5,7 @@ for clients to utilize.
 author: Omar Barazanji (omar@omniaura.co)
 """
 
+import re
 import redis
 import subprocess
 import psutil
@@ -29,8 +30,15 @@ def post_handler():
 @app.route("/omnisynth", methods=['POST', 'GET'])
 def omnisynth_handler():
     requests = request.args
+
     if request.method == "POST":
-        return f"<p>POST to OmniSynth Instance</p>"
+        if 'mapKnob' in requests:
+            req = json.loads(requests['mapKnob'])
+            knob_source = req['knobSource']
+            knob_chan = req['knobChan']
+            filter_name = req['filterName']
+            OI.OmniSynth.map_knob((knob_source, knob_chan), filter_name)
+            return f"<p>Mapping {knob_source, knob_chan} to {filter_name}</P"
 
     if request.method == "GET":
         if 'getKnobTable' in requests:

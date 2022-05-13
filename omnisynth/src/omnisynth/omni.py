@@ -10,6 +10,7 @@ import redis
 import json
 import numpy as np
 import os
+import ast
 
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
@@ -31,6 +32,7 @@ class Omni():
 
         # current synth selected.
         self.synth = "tone1"
+        r.set('synth', self.synth)
 
         # current song selected.
         self.song = "song1"
@@ -48,10 +50,12 @@ class Omni():
         #     organization: self.knob_table[knob_addr] = value
         #     where knob_addr = (src, chan) from the MIDI cc knob.
         self.knob_table = dict()
+        r.delete('knobTable')
 
         # holds all knob mappings to SC params.
         #     organization: self.knob_map[knob_addr] = filter_name.
         self.knob_map = dict()
+        r.delete('mapKnob')
 
         # holds history of last value sent through the UDP stream to SC.
         #     organization: self.knob_map_hist[filter_name] = value.
@@ -114,10 +118,20 @@ class Omni():
             self.control_evnt = self.sc.midi_evnt
             if self.midi_learn_on:
                 self.midi_learn(self.control_evnt)
+
+            try:
+                self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
+                knob_table = json.loads(r.get('knobTable'))
+            except:
+                self.knob_map = dict()
+
             if len(self.knob_map) != 0:
                 for knob_addr in self.knob_map:
                     filter_name = self.knob_map[knob_addr]
-                    raw_value = self.knob_table[knob_addr]
+                    try:
+                        raw_value = knob_table[str(knob_addr[0])][str(knob_addr[1])]['val']
+                    except:
+                        break
                     self.filter_sel(filter_name, raw_value)
             self.sc.midi_evnt = []
 
@@ -165,6 +179,7 @@ class Omni():
         command = "/omni"
         control = "synthSel"
         self.synth = synth_name
+        r.set('synth', self.synth)
         synth_path = os.path.abspath(directory).replace("\\", "/")
         self.sc.transmit(command, control, synth_name, synth_path)
 
@@ -185,7 +200,8 @@ class Omni():
 
     # select filter and param value.
     def filter_sel(self, filter_name, value):
-        command = "/%s" % self.synth
+        synth = r.get('synth').decode()
+        command = "/%s" % synth
         control = "filterSel"
         real_value = self.value_map(filter_name, value)
         if filter_name in self.knob_map_hist and self.knob_map_hist[filter_name] != value:
@@ -201,15 +217,30 @@ class Omni():
             val = midi_msg[1]
             src = midi_msg[2]
             chan = midi_msg[3]
-            self.knob_table[(src, chan)] = val
+            knob_arr = {chan : {'val' : val}}
+            if src in self.knob_table.keys():
+                if chan in self.knob_table[src].keys():
+                    self.knob_table[src][chan]['val'] = val
+                else:
+                    self.knob_table[src][chan] = {'val' : val}
+            else:
+                self.knob_table[src] = knob_arr
             r.set('knobTable', json.dumps(self.knob_table))
 
-    # maps a knob to an SC parameter.
-    # params:
-    #     knob_addr = (src, chan)
-    #     filter_name = "lpf" (for example)
+    
     def map_knob(self, knob_addr, filter_name):
+        '''
+        maps a knob to an SC parameter.
+            params:
+                knob_addr = (src, chan)
+                filter_name = "lpf" (for example)
+        '''
+        try:
+            self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
+        except:
+            self.knob_map = dict()
         self.knob_map[knob_addr] = filter_name
+        r.set('mapKnob', str(self.knob_map))
 
 # Quickly maps a table of param names to all knobs needed.
 def quick_map(OmniSynth):
