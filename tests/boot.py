@@ -13,10 +13,10 @@ current_dir = os.path.abspath("")
 dsp_dir = current_dir.replace("omnisynth-dev\\tests", "omnisynth-dsp\\").replace("\\","/")
 
 # import OmniSynth
-from omnisynth import omni
+os.chdir('../')
+from ..omnisynth.src.omnisynth import omni
 
 OmniSynth = omni.Omni()
-
 OmniSynth.sc_compile(dsp_dir+"/patches") # compiles all synthDefs.
 OmniSynth.synth_sel("tone1", dsp_dir) # selects first patch.
 OmniSynth.midi_learn_on = True # turn on midi learn.
