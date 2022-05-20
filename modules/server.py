@@ -12,6 +12,7 @@ import psutil
 from flask import Flask
 from flask import request
 import json
+
 app = Flask(__name__)
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
@@ -19,6 +20,13 @@ from constants import OMNISYNTH_PATH
 import omni_instance
 OI = omni_instance.OmniInstance()
 
+import platform
+
+OS = 'Windows'
+if platform.system() == 'Linux':
+    OS = 'Linux'
+elif platform.system() == 'Darwin':
+    OS = 'Darwin'
 
 # postman as POST Test
 @app.route("/", methods=['POST'])
@@ -102,7 +110,8 @@ def supercollider_handler():
     if request.method == "POST":
         if 'startServer' in requests:
             sc_main = OMNISYNTH_PATH + "main.scd"
-            subprocess.Popen(["sclang", sc_main])
+            if 'Darwin' in OS: subprocess.Popen(["/Applications/SuperCollider.app/Contents/MacOS/sclang", sc_main])
+            else: subprocess.Popen(["sclang", sc_main])
             return "<p>Starting server</p>"
 
         elif 'killServer' in requests:

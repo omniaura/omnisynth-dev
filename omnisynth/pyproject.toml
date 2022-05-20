@@ -5,6 +5,10 @@ requires = [
     "python-osc>=1.7.4",
     "Flask>=2.1.2",
     "redis>=4.1.2",
-    "py-midi"
+    "py-midi",
+    "gevent",
+    "psutil",
+    "numpy,
+    
 ]
 build-backend = "setuptools.build_meta"
