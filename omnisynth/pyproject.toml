@@ -8,7 +8,7 @@ requires = [
     "py-midi",
     "gevent",
     "psutil",
-    "numpy,
+    "numpy"
     
 ]
 build-backend = "setuptools.build_meta"

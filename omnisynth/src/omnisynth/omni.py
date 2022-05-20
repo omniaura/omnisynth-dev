@@ -14,9 +14,22 @@ import ast
 
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
+import platform
+OS = 'Windows'
+if platform.system() == 'Linux':
+    OS = 'Linux'
+elif platform.system() == 'Darwin':
+    OS = 'Darwin'
+
 # Used for sending / receiving data from supercollider.
-from .submodules.omnimidi import OmniMidi
-from .submodules.osc import OmniCollider
+try:
+    # when import omnisynth is called (for production)
+    from .submodules.omnimidi import OmniMidi
+    from .submodules.osc import OmniCollider
+except:
+    # when running locally before building wheel (for testing)
+    from submodules.omnimidi import OmniMidi
+    from submodules.osc import OmniCollider
 
 class Omni():
 
@@ -250,3 +263,52 @@ def quick_map(OmniSynth):
         itr += 1
         if itr == len(OmniSynth.param_table):
             break
+
+if __name__ == "__main__":
+    '''
+    For testing run `python -i omni.py` to get access to all OmniSynth functions while SC runs.
+    '''
+    import subprocess
+    from threading import Thread
+    # get omnisynth-dsp path
+    if 'Darwin' in OS or 'Linux' in OS: # Mac or Linux
+        OMNISYNTH_PATH = os.getcwd().replace(   
+            'omnisynth-dev/omnisynth/src/omnisynth', 'omnisynth-dsp/')
+    else: # Windows
+        OMNISYNTH_PATH = os.getcwd().replace(   
+            'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
+
+    OmniSynth = Omni()
+    OmniSynth.sc_compile(OMNISYNTH_PATH+"/patches") # compiles all synthDefs.
+    OmniSynth.synth_sel("tone1", OMNISYNTH_PATH) # selects first patch.
+    OmniSynth.midi_learn_on = True # turn on midi learn.
+    sc_main = OMNISYNTH_PATH + "main.scd"
+
+    def sc_thread():
+        if 'Darwin' in OS: subprocess.Popen(["/Applications/SuperCollider.app/Contents/MacOS/sclang", sc_main])
+        else: subprocess.Popen(["sclang", sc_main])
+    def omni_thread():
+        while (True):
+            OmniSynth.open_stream()
+    
+    omnithread = Thread(target=omni_thread)
+    omnithread.start()
+    scthread = Thread(target=sc_thread)
+    scthread.start()
+    scthread.join()
+
+
+# from threading import Thread
+# from time import sleep
+
+# def threaded_function(arg):
+#     for i in range(arg):
+#         print("running")
+#         sleep(1)
+
+
+# if __name__ == "__main__":
+#     thread = Thread(target = threaded_function, args = (10, ))
+#     thread.start()
+#     thread.join()
+#     print("thread finished...exiting")
