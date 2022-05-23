@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "532503ec-1d5f-4caa-8347-9c061f4820ea",
+		"_postman_id": "ed6f1e8c-0b2d-4904-a892-626fd21693d7",
 		"name": "OmniSynth",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21070844"
 	},
 	"item": [
 		{
@@ -33,7 +34,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patches?patchName=tone1",
+					"raw": "localhost:42042/patches?compileAllPatches=1&patchName=tone3",
 					"host": [
 						"localhost"
 					],
@@ -44,12 +45,11 @@
 					"query": [
 						{
 							"key": "compileAllPatches",
-							"value": "1",
-							"disabled": true
+							"value": "1"
 						},
 						{
 							"key": "patchName",
-							"value": "tone1"
+							"value": "tone3"
 						}
 					]
 				}
@@ -62,7 +62,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patterns?stopPattern=pattern1",
+					"raw": "localhost:42042/patterns?stopPattern=pattern2",
 					"host": [
 						"localhost"
 					],
@@ -73,12 +73,22 @@
 					"query": [
 						{
 							"key": "startPattern",
-							"value": "pattern1",
+							"value": "pattern2",
 							"disabled": true
 						},
 						{
 							"key": "stopPattern",
-							"value": "pattern1"
+							"value": "pattern2"
+						},
+						{
+							"key": "bpmSet",
+							"value": "200",
+							"disabled": true
+						},
+						{
+							"key": "synthSet",
+							"value": "tone910",
+							"disabled": true
 						}
 					]
 				}
@@ -115,7 +125,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/supercollider?startServer=1",
+					"raw": "localhost:42042/supercollider?killServer=1",
 					"host": [
 						"localhost"
 					],
@@ -127,13 +137,13 @@
 						{
 							"key": "startServer",
 							"value": "1",
-							"description": "starts the supercollider server."
+							"description": "starts the supercollider server.",
+							"disabled": true
 						},
 						{
 							"key": "killServer",
 							"value": "1",
-							"description": "kills the supercollider server.",
-							"disabled": true
+							"description": "kills the supercollider server."
 						}
 					]
 				}
