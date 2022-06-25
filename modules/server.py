@@ -7,7 +7,7 @@ author: Omar Barazanji (omar@omniaura.co)
 
 import platform
 import omni_instance
-from constants import OMNISYNTH_PATH
+from constants import OMNISYNTH_PATH, SUPERCOLLIDER_PROCESS_NAMES
 import re
 import redis
 import subprocess
@@ -35,8 +35,9 @@ elif platform.system() == 'Darwin':
 def post_handler():
     return "<p>Hello, World!</p>"
 
-
 # making requests to the OmniSynth instance
+
+
 @app.route("/omnisynth", methods=['POST', 'GET'])
 def omnisynth_handler():
     requests = request.args
@@ -138,10 +139,10 @@ def supercollider_handler():
 
             OI.OmniSynth.exit_sel()  # kills scsynth
             for proc in psutil.process_iter():
-                name = proc.name()
-                if 'sclang' in name:
-                    print('killing sclang process...')
-                    proc.kill()  # kills sclang
+                if proc.name().lower() in SUPERCOLLIDER_PROCESS_NAMES:
+                    print(f'killing process {name}')
+                    proc.kill()
+
             return "<p>Server killed</p>"
 
         else:
