@@ -33,6 +33,21 @@ elif platform.system() == 'Darwin':
 def post_handler():
     return "<p>Hello, World!</p>"
 
+# making requests to the Flask Server instance
+@app.route("/server", methods=['POST', 'GET'])
+def omnisynth_handler():
+    requests = request.args
+
+    if request.method == "POST":
+        if '' in requests:
+            req = json.loads(requests['mapKnob'])
+            return f"<p>Mapping {knob_source, knob_chan} to {filter_name}</P"
+
+    if request.method == "GET":
+        if 'getKnobTable' in requests:
+            knob_table = r.get('knobTable')
+            return knob_table
+
 
 # making requests to the OmniSynth instance
 @app.route("/omnisynth", methods=['POST', 'GET'])
@@ -132,6 +147,10 @@ def supercollider_handler():
                 if 'sclang' in name:
                     print('killing sclang process...')
                     proc.kill() # kills sclang
+                if 'scsynth' in name:
+                    print('killing scsynth process...')
+                    proc.kill()
+                    
             return "<p>Server killed</p>"
 
         else:
@@ -142,6 +161,9 @@ def supercollider_handler():
         if 'getOutDev' in requests:
             out_devices = r.get('outDevTable')
             return out_devices
+        if 'serverStatus' in requests:
+            status = r.get('serverStatus')
+            return json.dump
 
 
 
