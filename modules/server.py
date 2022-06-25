@@ -153,9 +153,6 @@ def supercollider_handler():
         if 'getOutDev' in requests:
             out_devices = r.get('outDevTable')
             return out_devices
-        if 'serverStatus' in requests:
-            status = r.get('serverStatus')
-            return json.dump
 
 
 class Server():
