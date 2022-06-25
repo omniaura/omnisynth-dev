@@ -63,15 +63,25 @@ def patterns_handler():
     if request.method == 'POST':
         if 'startPattern' in requests:
             pattern = str(request.args.get('startPattern'))
-            OI.OmniSynth.pattern_sel(pattern, 'start', OMNISYNTH_PATH)
+            OI.OmniSynth.pattern_sel(pattern, 'compile', OMNISYNTH_PATH)
+            OI.OmniSynth.pattern_sel(pattern, 'start')
             return f"<p>Starting {pattern}</p>"
 
         elif 'stopPattern' in requests:
 
             pattern = str(request.args.get('stopPattern'))
-            OI.OmniSynth.pattern_sel(pattern, 'stop', OMNISYNTH_PATH)
+            OI.OmniSynth.pattern_sel(pattern, 'stop')
             return f"<p>Stopping {pattern}</p>"
 
+        elif 'bpmSet' in requests:
+            value = str(request.args.get('bpmSet'))
+            OI.OmniSynth.pattern_param_sel('bpm', value)
+            return f"<p>Setting current pattern's bpm to {value}</p>"
+
+        elif 'synthSet' in requests:
+            synth = str(request.args.get('synthSet'))
+            OI.OmniSynth.pattern_param_sel('synth', synth)
+            return f"<p>Setting current pattern's synth to {synth}</p>"
     elif request.method == 'GET':
         pass
 

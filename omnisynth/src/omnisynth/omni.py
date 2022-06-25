@@ -49,6 +49,11 @@ class Omni():
 
         # current song selected.
         self.song = "song1"
+        r.set('song', self.song)
+
+        # current pattern selected.
+        self.pattern = "pattern1"
+        r.set("pattern", self.pattern)
 
         # holds control events from UDP stream.
         self.control_evnt = []
@@ -176,11 +181,19 @@ class Omni():
                 "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
         else:
             directory = "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
-        command = "/omni"
-        control = "pdef_control"
         path = os.path.abspath(directory).replace("\\", "/")
-        self.sc.transmit(command, "compile", path)
-        self.sc.transmit(command, control, action, path, pattern_name)
+        if action == 'compile':
+            command = "/omni"
+            control = "pdef_control"
+            self.sc.transmit(command, "compile", path)
+            self.sc.transmit(command, control, action, path)
+        else: # start / stop 
+            command = f"/{pattern_name}"
+            control = "playerSel"
+            self.sc.transmit(command, control, action)
+
+        self.pattern = pattern_name
+        r.set("pattern", self.pattern)
 
     # turns on / off synthDef's from SC.
     def synth_sel(self, synth_name, *args):
@@ -211,8 +224,14 @@ class Omni():
         dev_name = self.sc.out_dev_table[dev_num]
         self.sc.transmit(command, control, dev_name)
 
-    # select filter and param value.
+   
     def filter_sel(self, filter_name, value):
+        '''
+        change a synth's filter/param value.
+            params:
+                filter_name: select filter/param.
+                value: filter/param value.
+        '''
         synth = r.get('synth').decode()
         command = "/%s" % synth
         control = "filterSel"
@@ -223,6 +242,23 @@ class Omni():
         elif filter_name not in self.knob_map_hist:  # if first instance
             self.sc.transmit(command, control, filter_name, real_value)
             self.knob_map_hist[filter_name] = value
+
+    def pattern_param_sel(self, param_name, value):
+        '''
+        change a patterns's param value.
+            params:
+                param_name: select param.
+                value: filter/param value.
+                pattern_name (optional): change a specific pattern's parameter.
+        '''
+        pattern_name = r.get("pattern").decode()
+        command = "/%s" % pattern_name
+        control = "paramSel"
+        parameter = param_name
+        print('sending:')
+        print(command, control, parameter, value)
+        self.sc.transmit(command, control, parameter, value)
+
 
     # creates dict for all control knobs on MIDI controller.
     def midi_learn(self, midi_msg):
@@ -297,18 +333,7 @@ if __name__ == "__main__":
     scthread.start()
     scthread.join()
 
-
-# from threading import Thread
-# from time import sleep
-
-# def threaded_function(arg):
-#     for i in range(arg):
-#         print("running")
-#         sleep(1)
-
-
-# if __name__ == "__main__":
-#     thread = Thread(target = threaded_function, args = (10, ))
-#     thread.start()
-#     thread.join()
-#     print("thread finished...exiting")
+    def pattern_test():
+        OmniSynth.synth_sel("tone1", OMNISYNTH_PATH)
+        OmniSynth.synth_sel("tone3", OMNISYNTH_PATH)
+        OmniSynth.pattern_sel("pattern1", "start", OMNISYNTH_PATH)
