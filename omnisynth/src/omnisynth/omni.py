@@ -42,6 +42,7 @@ class Omni():
         self.sc.map_dispatcher("/noteOff")
         self.sc.map_dispatcher("/params")
         self.sc.map_dispatcher("/outDev")
+        self.sc.map_dispatcher("/server")
 
         # current synth selected.
         self.synth = "tone1"

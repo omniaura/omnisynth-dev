@@ -84,7 +84,11 @@ class OmniCollider:
             if dev_num not in self.out_dev_table:
                 self.out_dev_table[dev_num] = dev_name
             r.set('outDevTable', json.dumps(self.out_dev_table))
-            
+        
+        if event[0] == "/server":
+            value = event[1]
+            r.set("serverStatus", value)
+
         print(event)
 
     async def loop(self):

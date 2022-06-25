@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "ed6f1e8c-0b2d-4904-a892-626fd21693d7",
+		"_postman_id": "2f1066f8-7135-45b0-9b42-e0d36abdbaae",
 		"name": "OmniSynth",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21070844"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -62,7 +61,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patterns?stopPattern=pattern2",
+					"raw": "localhost:42042/patterns",
 					"host": [
 						"localhost"
 					],
@@ -73,12 +72,13 @@
 					"query": [
 						{
 							"key": "startPattern",
-							"value": "pattern2",
+							"value": "pattern9",
 							"disabled": true
 						},
 						{
 							"key": "stopPattern",
-							"value": "pattern2"
+							"value": "pattern4",
+							"disabled": true
 						},
 						{
 							"key": "bpmSet",
@@ -125,7 +125,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/supercollider?killServer=1",
+					"raw": "localhost:42042/supercollider?serverStatus=1",
 					"host": [
 						"localhost"
 					],
@@ -143,7 +143,12 @@
 						{
 							"key": "killServer",
 							"value": "1",
-							"description": "kills the supercollider server."
+							"description": "kills the supercollider server.",
+							"disabled": true
+						},
+						{
+							"key": "serverStatus",
+							"value": "1"
 						}
 					]
 				}
