@@ -144,13 +144,13 @@ def supercollider_handler():
             OI.OmniSynth.exit_sel() # kills scsynth 
             for proc in psutil.process_iter():
                 name = proc.name()
-                if 'sclang' in name:
+                if 'sclang' in name.lower():
                     print('killing sclang process...')
                     proc.kill() # kills sclang
-                if 'scsynth' in name:
+                if 'scsynth' in name.lower():
                     print('killing scsynth process...')
                     proc.kill()
-                    
+
             return "<p>Server killed</p>"
 
         else:
