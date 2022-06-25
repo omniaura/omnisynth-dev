@@ -28,6 +28,8 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     OS = 'Darwin'
 
+r.set('serverStatus', 'off')
+
 # postman as POST Test
 @app.route("/", methods=['POST'])
 def post_handler():
@@ -119,10 +121,12 @@ def supercollider_handler():
     requests = request.args
     if request.method == "POST":
         if 'startServer' in requests:
+            r.set('serverStatus', 'starting')
             sc_main = OMNISYNTH_PATH + "main.scd"
             if 'Darwin' in OS: subprocess.Popen(["/Applications/SuperCollider.app/Contents/MacOS/sclang", sc_main])
             else: subprocess.Popen(["sclang", sc_main])
             return "<p>Starting server</p>"
+
 
         elif 'killServer' in requests:
 
@@ -132,8 +136,8 @@ def supercollider_handler():
                 if 'sclang' in name:
                     print('killing sclang process...')
                     proc.kill() # kills sclang
+            r.set('serverStatus', "off")
             return "<p>Server killed</p>"
-
         else:
 
             return "<p>Invalid Query. Must provide startServer or killServer.</p>"
@@ -142,6 +146,9 @@ def supercollider_handler():
         if 'getOutDev' in requests:
             out_devices = r.get('outDevTable')
             return out_devices
+        elif 'serverStatus' in requests:
+            status = r.get('serverStatus')
+            return json.dumps({"status": status.decode()})
 
 
 
