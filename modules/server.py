@@ -110,6 +110,12 @@ def patches_handler():
         if 'patchTable' in requests:
             table = r.get('patchTable')
             return json.loads(table)
+
+        elif 'patchName' in requests:
+            table = r.get('patchTable')
+            patchTable = json.loads(table)
+            patch = patchTable.get(request.args.get('patchName'))
+            return patch
     else:
 
         return "<p>Invalid Query. Must provide compileAllPatches or patchName.</p>"
