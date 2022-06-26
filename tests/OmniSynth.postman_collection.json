@@ -33,7 +33,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patches?compileAllPatches=1&patchName=tone3",
+					"raw": "localhost:42042/patches?patchName=tone3",
 					"host": [
 						"localhost"
 					],
@@ -44,7 +44,8 @@
 					"query": [
 						{
 							"key": "compileAllPatches",
-							"value": "1"
+							"value": "1",
+							"disabled": true
 						},
 						{
 							"key": "patchName",
@@ -101,7 +102,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/patches?patchTable=1",
+					"raw": "localhost:42042/patches?patchName=tone3",
 					"host": [
 						"localhost"
 					],
@@ -112,7 +113,12 @@
 					"query": [
 						{
 							"key": "patchTable",
-							"value": "1"
+							"value": "1",
+							"disabled": true
+						},
+						{
+							"key": "patchName",
+							"value": "tone3"
 						}
 					]
 				}
@@ -125,7 +131,7 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:42042/supercollider?serverStatus=1",
+					"raw": "localhost:42042/supercollider?startServer=1",
 					"host": [
 						"localhost"
 					],
@@ -137,15 +143,34 @@
 						{
 							"key": "startServer",
 							"value": "1",
-							"description": "starts the supercollider server.",
-							"disabled": true
+							"description": "starts the supercollider server."
 						},
 						{
 							"key": "killServer",
 							"value": "1",
 							"description": "kills the supercollider server.",
 							"disabled": true
-						},
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Supercollider",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:42042/supercollider?serverStatus=1",
+					"host": [
+						"localhost"
+					],
+					"port": "42042",
+					"path": [
+						"supercollider"
+					],
+					"query": [
 						{
 							"key": "serverStatus",
 							"value": "1"
