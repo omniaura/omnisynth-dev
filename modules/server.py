@@ -143,7 +143,7 @@ def supercollider_handler():
 
             OI.OmniSynth.exit_sel()  # kills scsynth
             for proc in psutil.process_iter():
-                if proc.name().lower() in SUPERCOLLIDER_PROCESS_NAMES:
+                if proc.name().lower().strip(".exe") in SUPERCOLLIDER_PROCESS_NAMES:
                     print(f'killing process {proc.name()}')
                     proc.kill()
             r.set('serverStatus', "off")
