@@ -58,6 +58,7 @@ class OmniCollider:
         for x in args:
             event.append(x)
         self.midi_evnt = event
+        self.transmit('interop', event)
         if event[0] == "/noteOn" or event[0] == "/noteOff":
             self.teensy.send_note(event)
         if event[0] == "/params":
@@ -115,8 +116,10 @@ class OmniCollider:
 
     def transmit(self, command, control, *args):
         port = 57120
-        if (command == "server"):
+        if command == "server":
             port = 57110
+        elif command == 'interop':
+            port = 57130
         tx = argparse.ArgumentParser()
         tx.add_argument("--ip", default="127.0.0.1", help="osc default ip")
         tx.add_argument("--port", type=int, default=port,
@@ -126,6 +129,8 @@ class OmniCollider:
 
         if command == "server":
             client.send_message(control, args[0])
+        elif command == 'interop':
+            client.send_message('/interop-sf', args)
         else:
             control_block = [control]
             for x in args:
