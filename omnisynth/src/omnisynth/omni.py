@@ -6,6 +6,7 @@ author: Omar Barazanji (omar@omniaura.co)
 Python 3.7.x
 """
 
+import platform
 import redis
 import json
 import numpy as np
@@ -14,7 +15,6 @@ import ast
 
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
-import platform
 OS = 'Windows'
 if platform.system() == 'Linux':
     OS = 'Linux'
@@ -25,11 +25,12 @@ elif platform.system() == 'Darwin':
 try:
     # when import omnisynth is called (for production)
     from .submodules.omnimidi import OmniMidi
-    from .submodules.osc import OmniCollider
+    from .submodules.osc_interface import OscInterface
 except:
     # when running locally before building wheel (for testing)
     from submodules.omnimidi import OmniMidi
-    from submodules.osc import OmniCollider
+    from submodules.osc_interface import OscInterface
+
 
 class Omni():
 
@@ -37,12 +38,7 @@ class Omni():
 
         # initialize OSC module for UDP communication with Supercollider.
         self.sc = OmniCollider()
-        self.sc.map_dispatcher("/control")
-        self.sc.map_dispatcher("/noteOn")
-        self.sc.map_dispatcher("/noteOff")
-        self.sc.map_dispatcher("/params")
-        self.sc.map_dispatcher("/outDev")
-        self.sc.map_dispatcher("/server")
+        self.sc.map_dispatchers()
 
         # current synth selected.
         self.synth = "tone1"
@@ -148,7 +144,8 @@ class Omni():
                 for knob_addr in self.knob_map:
                     filter_name = self.knob_map[knob_addr]
                     try:
-                        raw_value = knob_table[str(knob_addr[0])][str(knob_addr[1])]['val']
+                        raw_value = knob_table[str(
+                            knob_addr[0])][str(knob_addr[1])]['val']
                     except:
                         break
                     self.filter_sel(filter_name, raw_value)
@@ -188,7 +185,7 @@ class Omni():
             control = "pdef_control"
             self.sc.transmit(command, "compile", path)
             self.sc.transmit(command, control, action, path)
-        else: # start / stop 
+        else:  # start / stop
             command = f"/{pattern_name}"
             control = "playerSel"
             self.sc.transmit(command, control, action)
@@ -197,18 +194,18 @@ class Omni():
         r.set("pattern", self.pattern)
 
     # turns on / off synthDef's from SC.
-    def synth_sel(self, synth_name, *args):
+    def select_patch(self, patch_filename, *args):
         if not len(args) == 0:
             parentDir = args[0]
-            directory = parentDir + "patches/%s.scd" % synth_name
+            directory = parentDir + "patches/%s.scd" % patch_filename
         else:
-            directory = "patches/%s.scd" % synth_name
+            directory = "patches/%s.scd" % patch_filename
         command = "/omni"
-        control = "synthSel"
-        self.synth = synth_name
+        control = "patchSel"
+        self.synth = patch_filename
         r.set('synth', self.synth)
-        synth_path = os.path.abspath(directory).replace("\\", "/")
-        self.sc.transmit(command, control, synth_name, synth_path)
+        patch_path = os.path.abspath(directory).replace("\\", "/")
+        self.sc.transmit(command, control, patch_filename, patch_path)
 
     def exit_sel(self):
         command = "/omni"
@@ -225,17 +222,16 @@ class Omni():
         dev_name = self.sc.out_dev_table[dev_num]
         self.sc.transmit(command, control, dev_name)
 
-   
     def filter_sel(self, filter_name, value):
         '''
-        change a synth's filter/param value.
+        change a synth's param value.
             params:
                 filter_name: select filter/param.
                 value: filter/param value.
         '''
         synth = r.get('synth').decode()
         command = "/%s" % synth
-        control = "filterSel"
+        control = "paramSel"
         real_value = self.value_map(filter_name, value)
         if filter_name in self.knob_map_hist and self.knob_map_hist[filter_name] != value:
             self.sc.transmit(command, control, filter_name, real_value)
@@ -260,24 +256,23 @@ class Omni():
         print(command, control, parameter, value)
         self.sc.transmit(command, control, parameter, value)
 
-
     # creates dict for all control knobs on MIDI controller.
+
     def midi_learn(self, midi_msg):
         if len(midi_msg) == 4:
             val = midi_msg[1]
             src = midi_msg[2]
             chan = midi_msg[3]
-            knob_arr = {chan : {'val' : val}}
+            knob_arr = {chan: {'val': val}}
             if src in self.knob_table.keys():
                 if chan in self.knob_table[src].keys():
                     self.knob_table[src][chan]['val'] = val
                 else:
-                    self.knob_table[src][chan] = {'val' : val}
+                    self.knob_table[src][chan] = {'val': val}
             else:
                 self.knob_table[src] = knob_arr
             r.set('knobTable', json.dumps(self.knob_table))
 
-    
     def map_knob(self, knob_addr, filter_name):
         '''
         maps a knob to an SC parameter.
@@ -293,6 +288,8 @@ class Omni():
         r.set('mapKnob', str(self.knob_map))
 
 # Quickly maps a table of param names to all knobs needed.
+
+
 def quick_map(OmniSynth):
     itr = 0
     for key, value in OmniSynth.knob_table.items():
@@ -301,6 +298,7 @@ def quick_map(OmniSynth):
         if itr == len(OmniSynth.param_table):
             break
 
+
 if __name__ == "__main__":
     '''
     For testing run `python -i omni.py` to get access to all OmniSynth functions while SC runs.
@@ -308,26 +306,31 @@ if __name__ == "__main__":
     import subprocess
     from threading import Thread
     # get omnisynth-dsp path
-    if 'Darwin' in OS or 'Linux' in OS: # Mac or Linux
-        OMNISYNTH_PATH = os.getcwd().replace(   
+    if 'Darwin' in OS or 'Linux' in OS:  # Mac or Linux
+        OMNISYNTH_PATH = os.getcwd().replace(
             'omnisynth-dev/omnisynth/src/omnisynth', 'omnisynth-dsp/')
-    else: # Windows
-        OMNISYNTH_PATH = os.getcwd().replace(   
+    else:  # Windows
+        OMNISYNTH_PATH = os.getcwd().replace(
             'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
 
     OmniSynth = Omni()
-    OmniSynth.sc_compile(OMNISYNTH_PATH+"/patches") # compiles all synthDefs.
-    OmniSynth.synth_sel("tone1", OMNISYNTH_PATH) # selects first patch.
-    OmniSynth.midi_learn_on = True # turn on midi learn.
+    OmniSynth.sc_compile(OMNISYNTH_PATH+"/patches")  # compiles all synthDefs.
+    # selects first patch.
+    OmniSynth.select_patch(patch_filename)("tone1", OMNISYNTH_PATH)
+    OmniSynth.midi_learn_on = True  # turn on midi learn.
     sc_main = OMNISYNTH_PATH + "main.scd"
 
     def sc_thread():
-        if 'Darwin' in OS: subprocess.Popen(["/Applications/SuperCollider.app/Contents/MacOS/sclang", sc_main])
-        else: subprocess.Popen(["sclang", sc_main])
+        if 'Darwin' in OS:
+            subprocess.Popen(
+                ["/Applications/SuperCollider.app/Contents/MacOS/sclang", sc_main])
+        else:
+            subprocess.Popen(["sclang", sc_main])
+
     def omni_thread():
         while (True):
             OmniSynth.open_stream()
-    
+
     omnithread = Thread(target=omni_thread)
     omnithread.start()
     scthread = Thread(target=sc_thread)
