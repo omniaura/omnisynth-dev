@@ -52,5 +52,5 @@ class Patch:
 
         self.params[param_name] = param_value
         real_value = self.get_param_real_value(param_name)
-        OscMessageSender.send_message(
+        OscMessageSender.send_client_message(
             f"/{self.filename}", "setParam", param_name, real_value)

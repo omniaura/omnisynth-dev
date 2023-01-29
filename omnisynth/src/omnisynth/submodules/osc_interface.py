@@ -81,12 +81,27 @@ class OscInterface:
     def receive(self):
         asyncio.run(self.init_main())
 
-    def handle_event(self, *args):
-        command_name = args[0]
-        command_args = []
-        for arg in args:
-            command_args.append(arg)
-        self.message_handler.handle_message(command_name, command_args)
+    def add_patch(self, patch_filename):
+        self.patches.find_or_add_patch(patch_filename)
+
+    def set_patch_param_value(self, patch_filename, param_name, value):
+        '''
+        change a synth's param value.
+            params:
+                filter_name: select filter/param.
+                value: filter/param value.
+        '''
+        self.patches.set_patch_param_value(
+            patch_filename, param_name, param_value)
+
+    def set_knob_value(self, val, src, chan):
+        self.knobs.set_knob_value(src, chan, val)
+
+    def map_knob_to_filter_name(self, src, chan, filter_name):
+        self.knobs.set_knob_filter_name(src, chan, filter_name)
+
+    def active_patch(self):
+        return self.patches.active_patch
 
     def map_commands_to_dispatcher(self):
         self.message_handler = MessageHandler()
@@ -102,6 +117,13 @@ class OscInterface:
             '/setOutputDevices', self.handle_set_output_devices)
         self.message_handler.attach_message_listener(
             '/superColliderStatus', self.handle_super_collider_status)
+
+    def handle_event(self, *args):
+        command_name = args[0]
+        command_args = []
+        for arg in args:
+            command_args.append(arg)
+        self.message_handler.handle_message(command_name, command_args)
 
     def handle_note_on(self, command_args):
         self.midi_handler.send_note(
@@ -121,22 +143,6 @@ class OscInterface:
 
         knob = self.knobs.find_or_add_knob(src, chan)
         self.set_patch_param_value(knob.filter_name, param_name, value)
-
-    def add_patch(self, patch_filename):
-        self.patches.find_or_add_patch(patch_filename)
-
-    def set_patch_param_value(self, patch_filename, param_name, value):
-        '''
-        change a synth's param value.
-            params:
-                filter_name: select filter/param.
-                value: filter/param value.
-        '''
-        self.patches.set_patch_param_value(
-            patch_filename, param_name, param_value)
-
-    def set_knob_value(self, val, src, chan):
-        self.knobs.set_knob_value(src, chan, val)
 
     def handle_params(self, command_args):
         """
@@ -158,9 +164,6 @@ class OscInterface:
     def handle_super_collider_status(self, command_args):
         if command_args[0] == 'running':
             self.super_collider_booted = True
-
-    def map_knob_to_filter_name(self, src, chan, filter_name):
-        self.knobs.set_knob_filter_name(src, chan, filter_name)
 
 
 if __name__ == "__main__":

@@ -125,7 +125,7 @@ class Omni():
             OscMessageSender.send_omni_message("compile", path)
             OscMessageSender.send_omni_message("controlPattern", action, path)
         else:  # start / stop
-            OscMessageSender.send_message(
+            OscMessageSender.send_client_message(
                 f"/{pattern_name}", "playerSel", action)
 
         self.pattern = pattern_name
@@ -134,25 +134,22 @@ class Omni():
     def stop_sc_synth(self):
         OscMessageSender.send_omni_message('stopScSynth')
 
-    def filter_sel(self, filter_name, value):
-        '''
-        change a synth's param value.
-            params:
-                filter_name: select filter/param.
-                value: filter/param value.
-        '''
-        synth = r.get('synth').decode()
-        command = "/%s" % synth
-        control = "setParam"
-        real_value = self.value_map(filter_name, value)
-        if filter_name in self.knob_map_hist and self.knob_map_hist[filter_name] != value:
-            OscMessageSender.send_message(
-                command, control, filter_name, real_value)
-            self.knob_map_hist[filter_name] = value
-        elif filter_name not in self.knob_map_hist:  # if first instance
-            OscMessageSender.send_message(
-                command, control, filter_name, real_value)
-            self.knob_map_hist[filter_name] = value
+    def sc_server_boot_status(self):
+        if self.osc_interface.super_collider_booted:
+            return 'Running'
+
+        return 'Stopped'
+
+    def set_patch_parameter_value(self, param_name, value):
+        """
+        Change a parameter value for the currently active patch
+
+        Args:
+            param_name (String): _description_
+            value (number): _description_
+        """
+        self.osc_interface.set_patch_param_value(
+            self.osc_interface.active_patch().filename, param_name, value)
 
     def pattern_param_sel(self, param_name, value):
         '''
