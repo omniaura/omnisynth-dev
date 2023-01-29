@@ -50,6 +50,9 @@ class OscInterface:
         self.osc_command_dispatcher = dispatcher.Dispatcher()
         self.note_evnt_hist = dict()
 
+        # track running state of super collider server
+        self.super_collider_booted = False
+
         # our patches
         self.patches = PatchCollection()
 
@@ -97,6 +100,8 @@ class OscInterface:
             '/params', self.handle_params)
         self.message_handler.attach_message_listener(
             '/setOutputDevices', self.handle_set_output_devices)
+        self.message_handler.attach_message_listener(
+            '/superColliderStatus', self.handle_super_collider_status)
 
     def handle_note_on(self, command_args):
         self.midi_handler.send_note(
@@ -149,6 +154,10 @@ class OscInterface:
     def handle_set_output_devices(self, command_args):
         self.output_devices.find_or_add_output_device(
             command_args[0], command_args[1])
+
+    def handle_super_collider_status(self, command_args):
+        if command_args[0] == 'running':
+            self.super_collider_booted = True
 
     def map_knob_to_filter_name(self, src, chan, filter_name):
         self.knobs.set_knob_filter_name(src, chan, filter_name)
