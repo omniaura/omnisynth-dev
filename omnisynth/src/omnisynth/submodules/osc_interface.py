@@ -112,12 +112,13 @@ class OscInterface:
         chan = command_args[2]
 
         if self.midi_learn_on:
-            self.midi_learn(val, src, chan)
+            self.set_knob_value(val, src, chan)
 
         knob = self.knobs.find_or_add_knob(src, chan)
         self.set_patch_param_value(knob.filter_name, param_name, value)
 
-        return
+    def add_patch(self, patch_filename):
+        self.patches.find_or_add_patch(patch_filename)
 
     def set_patch_param_value(self, patch_filename, param_name, value):
         '''
@@ -129,7 +130,7 @@ class OscInterface:
         self.patches.set_patch_param_value(
             patch_filename, param_name, param_value)
 
-    def midi_learn(self, val, src, chan):
+    def set_knob_value(self, val, src, chan):
         self.knobs.set_knob_value(src, chan, val)
 
     def handle_params(self, command_args):
@@ -143,7 +144,7 @@ class OscInterface:
         param_default_val = command_args[3]
 
         self.patches.set_patch_param_value(
-            patch_filename, param_name, param_value)
+            patch_filename, param_name, param_default_val)
 
     def handle_set_output_devices(self, command_args):
         self.output_devices.find_or_add_output_device(

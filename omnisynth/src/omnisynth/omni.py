@@ -85,10 +85,6 @@ class Omni():
 
         # Variables For GUI.
         self.mapMode = False
-        self.numPatch = 0
-        self.patchIndex = 0  # indexes for quick select on main screen
-        self.patchListIndex = dict()
-        self.patternListIndex = dict()
 
         # all possible synth params.
         self.param_table = [
@@ -97,70 +93,20 @@ class Omni():
             "lin_stop", "lin_duration"
         ]
 
-    # opens UDP stream for MIDI control messages.
-    def open_midi_control_msg_stream(self, *args):
-        self.osc_interface.receive()
-        try:
-            # grab first index (tag) if it exists
-            event = self.osc_interface.midi_evnt[0]
-        except IndexError:
-            event = ""
-
-        if event != "/control":
-            return
-
-        # save entire message
-        self.control_evnt = self.osc_interface.midi_evnt
-        if self.midi_learn_on:
-            self.midi_learn(self.control_evnt)
-
-        try:
-            self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
-            knob_table = json.loads(r.get('knobTable'))
-        except:
-            self.knob_map = dict()
-
-        if len(self.knob_map) != 0:
-            for knob_addr in self.knob_map:
-                filter_name = self.knob_map[knob_addr]
-                try:
-                    raw_value = knob_table[str(
-                        knob_addr[0])][str(knob_addr[1])]['val']
-                except:
-                    break
-                self.filter_sel(filter_name, raw_value)
-        self.osc_interface.midi_evnt = []
-
     def compile_patches(self, folder, parentDir=''):
         if len(parentDir) != 0:
             directory = parentDir + "%s/" % folder
         else:
             directory = "%s/" % folder
 
-        command = "/omni"
-        control = "compile"
+        # Add all patches via filenames through our osc_interface#add_patch method
         for patch in os.listdir(directory):
             filedir = directory + patch
-            path = os.path.abspath(filedir).replace("\\", "/")
-            OscMessageSender.send_message(command, control, path)
-        return self.osc_interface.patch_param_table
+            patch_filename = os.path.abspath(filedir).replace("\\", "/")
+            self.osc_interface.add_patch(patch_filename)
 
-    # compiles all synthDef's in dsp folder.
-
-    def sc_compile(self, typeDef, *args):
-
-        if not len(args) == 0:
-            parentDir = args[0]
-            directory = parentDir + "%s/" % typeDef
-        else:
-            directory = "%s/" % typeDef
-        command = "/omni"
-        control = "compile"
-        for patch in os.listdir(directory):
-            filedir = directory + patch
-            path = os.path.abspath(filedir).replace("\\", "/")
-            OscMessageSender.send_message(command, control, path)
-        return self.osc_interface.patch_param_table
+        # Return the patches we have compiled
+        return self.osc_interface.patches
 
     # saves state of which song is currently selected.
     def song_sel(self, song_name):
@@ -176,23 +122,17 @@ class Omni():
             directory = "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
         path = os.path.abspath(directory).replace("\\", "/")
         if action == 'compile':
-            command = "/omni"
-            control = "controlPattern"
-            OscMessageSender.send_message(command, "compile", path)
-            OscMessageSender.send_message(
-                command, control, action, path)
+            OscMessageSender.send_omni_message("compile", path)
+            OscMessageSender.send_omni_message("controlPattern", action, path)
         else:  # start / stop
-            command = f"/{pattern_name}"
-            control = "playerSel"
-            OscMessageSender.send_message(command, control, action)
+            OscMessageSender.send_message(
+                f"/{pattern_name}", "playerSel", action)
 
         self.pattern = pattern_name
         r.set("pattern", self.pattern)
 
     def stop_sc_synth(self):
-        command = "/omni"
-        control = "stopScSynth"
-        OscMessageSender.send_message(command, control)
+        OscMessageSender.send_omni_message('stopScSynth')
 
     def filter_sel(self, filter_name, value):
         '''
@@ -234,33 +174,17 @@ class Omni():
     # creates dict for all control knobs on MIDI controller.
 
     def midi_learn(self, midi_msg):
-        if len(midi_msg) == 4:
-            val = midi_msg[1]
-            src = midi_msg[2]
-            chan = midi_msg[3]
-            knob_arr = {chan: {'val': val}}
-            if src in self.knob_table.keys():
-                if chan in self.knob_table[src].keys():
-                    self.knob_table[src][chan]['val'] = val
-                else:
-                    self.knob_table[src][chan] = {'val': val}
-            else:
-                self.knob_table[src] = knob_arr
-            r.set('knobTable', json.dumps(self.knob_table))
+        if len(midi_msg) != 4:
+            return
+
+        val = midi_msg[1]
+        src = midi_msg[2]
+        chan = midi_msg[3]
+
+        self.osc_interface.set_knob_value(val, src, chan)
 
     def map_knob(self, src, chan, filter_name):
         self.osc_interface.map_knob_to_filter_name(src, chan, filter_name)
-
-# Quickly maps a table of param names to all knobs needed.
-
-
-def quick_map(OmniSynth):
-    itr = 0
-    for key, value in OmniSynth.knob_table.items():
-        OmniSynth.map_knob(key, OmniSynth.param_table[itr])
-        itr += 1
-        if itr == len(OmniSynth.param_table):
-            break
 
 
 """

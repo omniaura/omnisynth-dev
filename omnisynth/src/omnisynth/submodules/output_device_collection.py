@@ -28,7 +28,5 @@ class OutputDeviceCollection:
                 f"Output device with index {device_index} not found")
 
         self.active_output_device = output_device
-        command = "/omni"
-        control = "selectOutputDevice"
-        OscMessageSender.send_message(
-            command, control, output_device.device_name)
+        OscMessageSender.send_omni_message(
+            "selectOutputDevice", output_device.device_name)
