@@ -26,10 +26,12 @@ try:
     # when import omnisynth is called (for production)
     from .submodules.omnimidi import OmniMidi
     from .submodules.osc_interface import OscInterface
+    from .submodules.osc_message_sender import OscMessageSender
 except:
     # when running locally before building wheel (for testing)
     from submodules.omnimidi import OmniMidi
     from submodules.osc_interface import OscInterface
+    from submodules.osc_message_sender import OscMessageSender
 
 
 class Omni():
@@ -37,8 +39,8 @@ class Omni():
     def __init__(self):
 
         # initialize OSC module for UDP communication with Supercollider.
-        self.sc = OmniCollider()
-        self.sc.map_dispatchers()
+        self.osc_interface = OscInterface()
+        self.osc_interface.map_commands_to_dispatcher()
 
         # current synth selected.
         self.synth = "tone1"
@@ -81,18 +83,6 @@ class Omni():
         # Table that will be outputted to DAC & Mux.
         self.cv_table = [[0 for x in range(8)] for y in range(4)]
 
-        # LUT for freq control messages, maps 0-127 to 20 - 20000 Hz.
-        self.cc_to_freq = np.linspace(20, 20000, 128).tolist()
-
-        # LUT for adsr control messages, maps 0-127 to .001 - 1 (seconds or amplitude).
-        self.cc_to_adsr = np.linspace(0.001, 2, 128).tolist()
-
-        # LUT for linear envelope params.
-        self.cc_to_lin = np.linspace(1, 3000, 128).tolist()
-
-        # LUT for duration.
-        self.cc_to_duration = np.linspace(0.001, 5, 128).tolist()
-
         # Variables For GUI.
         self.mapMode = False
         self.numPatch = 0
@@ -107,51 +97,56 @@ class Omni():
             "lin_stop", "lin_duration"
         ]
 
-    def value_map(self, filt, inp):
-        value = inp
-        if filt == "lpf" or filt == "hpf":
-            value = self.cc_to_freq[int(inp)]
-        if filt == "attack" or filt == "decay" or filt == "sustain" or filt == "release":
-            value = self.cc_to_adsr[int(inp)]
-        if filt == "lin_start" or filt == "lin_stop":
-            value = self.cc_to_lin[int(inp)]
-        if filt == "lin_duration":
-            value = self.cc_to_duration[int(inp)]
-        return value
-
     # opens UDP stream for MIDI control messages.
-    def open_stream(self, *args):
-        self.sc.receive()
+    def open_midi_control_msg_stream(self, *args):
+        self.osc_interface.receive()
         try:
             # grab first index (tag) if it exists
-            event = self.sc.midi_evnt[0]
+            event = self.osc_interface.midi_evnt[0]
         except IndexError:
             event = ""
 
-        if event == "/control":
-            # save entire message
-            self.control_evnt = self.sc.midi_evnt
-            if self.midi_learn_on:
-                self.midi_learn(self.control_evnt)
+        if event != "/control":
+            return
 
-            try:
-                self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
-                knob_table = json.loads(r.get('knobTable'))
-            except:
-                self.knob_map = dict()
+        # save entire message
+        self.control_evnt = self.osc_interface.midi_evnt
+        if self.midi_learn_on:
+            self.midi_learn(self.control_evnt)
 
-            if len(self.knob_map) != 0:
-                for knob_addr in self.knob_map:
-                    filter_name = self.knob_map[knob_addr]
-                    try:
-                        raw_value = knob_table[str(
-                            knob_addr[0])][str(knob_addr[1])]['val']
-                    except:
-                        break
-                    self.filter_sel(filter_name, raw_value)
-            self.sc.midi_evnt = []
+        try:
+            self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
+            knob_table = json.loads(r.get('knobTable'))
+        except:
+            self.knob_map = dict()
+
+        if len(self.knob_map) != 0:
+            for knob_addr in self.knob_map:
+                filter_name = self.knob_map[knob_addr]
+                try:
+                    raw_value = knob_table[str(
+                        knob_addr[0])][str(knob_addr[1])]['val']
+                except:
+                    break
+                self.filter_sel(filter_name, raw_value)
+        self.osc_interface.midi_evnt = []
+
+    def compile_patches(self, folder, parentDir=''):
+        if len(parentDir) != 0:
+            directory = parentDir + "%s/" % folder
+        else:
+            directory = "%s/" % folder
+
+        command = "/omni"
+        control = "compile"
+        for patch in os.listdir(directory):
+            filedir = directory + patch
+            path = os.path.abspath(filedir).replace("\\", "/")
+            OscMessageSender.send_message(command, control, path)
+        return self.osc_interface.patch_param_table
 
     # compiles all synthDef's in dsp folder.
+
     def sc_compile(self, typeDef, *args):
 
         if not len(args) == 0:
@@ -164,8 +159,8 @@ class Omni():
         for patch in os.listdir(directory):
             filedir = directory + patch
             path = os.path.abspath(filedir).replace("\\", "/")
-            self.sc.transmit(command, control, path)
-        return self.sc.patch_param_table
+            OscMessageSender.send_message(command, control, path)
+        return self.osc_interface.patch_param_table
 
     # saves state of which song is currently selected.
     def song_sel(self, song_name):
@@ -182,45 +177,22 @@ class Omni():
         path = os.path.abspath(directory).replace("\\", "/")
         if action == 'compile':
             command = "/omni"
-            control = "pdef_control"
-            self.sc.transmit(command, "compile", path)
-            self.sc.transmit(command, control, action, path)
+            control = "controlPattern"
+            OscMessageSender.send_message(command, "compile", path)
+            OscMessageSender.send_message(
+                command, control, action, path)
         else:  # start / stop
             command = f"/{pattern_name}"
             control = "playerSel"
-            self.sc.transmit(command, control, action)
+            OscMessageSender.send_message(command, control, action)
 
         self.pattern = pattern_name
         r.set("pattern", self.pattern)
 
-    # turns on / off synthDef's from SC.
-    def select_patch(self, patch_filename, *args):
-        if not len(args) == 0:
-            parentDir = args[0]
-            directory = parentDir + "patches/%s.scd" % patch_filename
-        else:
-            directory = "patches/%s.scd" % patch_filename
+    def stop_sc_synth(self):
         command = "/omni"
-        control = "patchSel"
-        self.synth = patch_filename
-        r.set('synth', self.synth)
-        patch_path = os.path.abspath(directory).replace("\\", "/")
-        self.sc.transmit(command, control, patch_filename, patch_path)
-
-    def exit_sel(self):
-        command = "/omni"
-        control = "exitSel"
-        self.sc.transmit(command, control)
-
-    def out_dev_sel(self, dev_num):
-        command = "/omni"
-        control = "outDevSel"
-        if dev_num not in self.sc.out_dev_table:
-            print(
-                f'[ERROR] in #out_dev_sel: Error when selecting device {dev_num}: Device not found')
-            return
-        dev_name = self.sc.out_dev_table[dev_num]
-        self.sc.transmit(command, control, dev_name)
+        control = "stopScSynth"
+        OscMessageSender.send_message(command, control)
 
     def filter_sel(self, filter_name, value):
         '''
@@ -231,13 +203,15 @@ class Omni():
         '''
         synth = r.get('synth').decode()
         command = "/%s" % synth
-        control = "paramSel"
+        control = "setParam"
         real_value = self.value_map(filter_name, value)
         if filter_name in self.knob_map_hist and self.knob_map_hist[filter_name] != value:
-            self.sc.transmit(command, control, filter_name, real_value)
+            OscMessageSender.send_message(
+                command, control, filter_name, real_value)
             self.knob_map_hist[filter_name] = value
         elif filter_name not in self.knob_map_hist:  # if first instance
-            self.sc.transmit(command, control, filter_name, real_value)
+            OscMessageSender.send_message(
+                command, control, filter_name, real_value)
             self.knob_map_hist[filter_name] = value
 
     def pattern_param_sel(self, param_name, value):
@@ -250,11 +224,12 @@ class Omni():
         '''
         pattern_name = r.get("pattern").decode()
         command = "/%s" % pattern_name
-        control = "paramSel"
+        control = "setParam"
         parameter = param_name
         print('sending:')
         print(command, control, parameter, value)
-        self.sc.transmit(command, control, parameter, value)
+        OscMessageSender.send_message(
+            command, control, parameter, value)
 
     # creates dict for all control knobs on MIDI controller.
 
@@ -273,19 +248,8 @@ class Omni():
                 self.knob_table[src] = knob_arr
             r.set('knobTable', json.dumps(self.knob_table))
 
-    def map_knob(self, knob_addr, filter_name):
-        '''
-        maps a knob to an SC parameter.
-            params:
-                knob_addr = (src, chan)
-                filter_name = "lpf" (for example)
-        '''
-        try:
-            self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
-        except:
-            self.knob_map = dict()
-        self.knob_map[knob_addr] = filter_name
-        r.set('mapKnob', str(self.knob_map))
+    def map_knob(self, src, chan, filter_name):
+        self.osc_interface.map_knob_to_filter_name(src, chan, filter_name)
 
 # Quickly maps a table of param names to all knobs needed.
 
@@ -299,6 +263,10 @@ def quick_map(OmniSynth):
             break
 
 
+"""
+Main entrypoint
+Initializes main Omni process and listeners
+"""
 if __name__ == "__main__":
     '''
     For testing run `python -i omni.py` to get access to all OmniSynth functions while SC runs.
@@ -336,8 +304,3 @@ if __name__ == "__main__":
     scthread = Thread(target=sc_thread)
     scthread.start()
     scthread.join()
-
-    def pattern_test():
-        OmniSynth.synth_sel("tone1", OMNISYNTH_PATH)
-        OmniSynth.synth_sel("tone3", OMNISYNTH_PATH)
-        OmniSynth.pattern_sel("pattern1", "start", OMNISYNTH_PATH)

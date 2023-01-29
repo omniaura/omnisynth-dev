@@ -28,7 +28,7 @@ class MidiHandler:
                 'Could not establish MIDI connection! Exiting...')
         print('MIDI connection established.')
 
-    def send_note(command, note, velocity, connection):
+    def send_note(command, note, velocity):
         msg = 0
         if command == "/noteOn":
             note_on = NoteOn(note, velocity)
@@ -38,7 +38,7 @@ class MidiHandler:
             msg = Message(note_off, 2)
 
         if not msg == 0:
-            connection.conn.write(msg)
+            self.connection.conn.write(msg)
         else:
             print(f'Unexpected MIDI command received: ${command}')
 

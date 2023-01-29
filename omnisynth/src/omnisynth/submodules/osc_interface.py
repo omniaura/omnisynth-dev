@@ -29,89 +29,35 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 import asyncio
 import time
 from .message_handler import MessageHandler
+from .midi_handler import MidiHandler
+from .knob_collection import KnobCollection
+from .output_device_collection import OutputDeviceCollection
+from .patch_collection import PatchCollection
+
+from .patch import Patch
 
 import redis
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
 DELAY_MS = 50
 
-OSC_COMMANDS = [
-    '/noteOff',
-    '/noteOn',
-    '/control'
-    '/params'
-    '/outDev'
-    '/server'
-]
-
 
 class OscInterface:
 
     def __init__(self):
         self.midi_evnt = []
-        OmniMidi.open_midi_connection()
+        self.midi_handler = MidiHandler()
         self.osc_command_dispatcher = dispatcher.Dispatcher()
         self.note_evnt_hist = dict()
 
-        # dictionary holding all patches and their parameters.
-        #     organization: self.patch_param_table[(synth, param_num)] = [param_name, default_val]]
-        self.patch_param_table = dict()
+        # our patches
+        self.patches = PatchCollection()
 
-        # array holding our patches
-        self.patches = []
-        r.delete('patchTable')
-
-        # dictionary holding all output devices and their index in SC.
-        #     organization: self.out_dev_table[dev_num] = out_dev_name
-        self.out_dev_table = dict()
+        # knobs
+        self.knobs = KnobCollection()
 
         # array holding our output devices
-        # todo: make OutputDevice a python object
-        self.output_devices = []
-
-    def handle_event(self, *args):
-        command_name = args[0]
-        command_args = []
-        for arg in args:
-            command_args.append(arg)
-        MessageHandler(command_name, command_args).handle_message()
-
-    def rx_handler(self, *args):
-        event = []
-        for x in args:
-            event.append(x)
-        self.midi_evnt = event
-        if event[0] == "/noteOn" or event[0] == "/noteOff":
-            self.teensy.send_note(event)
-        if event[0] == "/params":
-            param = event
-            synth = param[1]
-            param_num = param[2]
-            param_name = param[3]
-            param_default_val = param[4]
-
-            param_arr = {'params': {param_name: param_default_val}}
-            key = synth
-            if key in self.patch_param_table:
-                if not str(param_arr['params']) in str(self.patch_param_table[key]['params']):
-                    self.patch_param_table[key]['params'][param_name] = param_default_val
-                    r.set('patchTable', json.dumps(self.patch_param_table))
-            else:
-                self.patch_param_table[key] = param_arr
-                r.set('patchTable', json.dumps(self.patch_param_table))
-
-        if event[0] == "/outDev":
-            dev_num = event[1]
-            dev_name = event[2]
-            if dev_num not in self.out_dev_table:
-                self.out_dev_table[dev_num] = dev_name
-            r.set('outDevTable', json.dumps(self.out_dev_table))
-
-        if event[0] == "/server":
-            value = event[1]
-            r.set("serverStatus", value)
-
-        print(event)
+        self.output_devices = OutputDeviceCollection()
 
     async def loop(self):
         # sleep time
@@ -132,33 +78,80 @@ class OscInterface:
     def receive(self):
         asyncio.run(self.init_main())
 
+    def handle_event(self, *args):
+        command_name = args[0]
+        command_args = []
+        for arg in args:
+            command_args.append(arg)
+        self.message_handler.handle_message(command_name, command_args)
+
     def map_commands_to_dispatcher(self):
-        for command_name in OSC_COMMANDS:
-            self.osc_command_dispatcher.map(command_name, self.handle_event)
+        self.message_handler = MessageHandler()
+        self.message_handler.attach_message_listener(
+            '/noteOn', self.handle_note_on)
+        self.message_handler.attach_message_listener(
+            '/noteOff', self.handle_note_off)
+        self.message_handler.attach_message_listener(
+            '/control', self.handle_control)
+        self.message_handler.attach_message_listener(
+            '/params', self.handle_params)
+        self.message_handler.attach_message_listener(
+            '/setOutputDevices', self.handle_set_output_devices)
 
-    def map_dispatcher(self, sc_variable):
-        self.osc_command_dispatcher.map(sc_variable, self.rx_handler)
+    def handle_note_on(self, command_args):
+        self.midi_handler.send_note(
+            '/noteOn', command_args[0], command_args[1])
 
-    def transmit(self, command, control, *args):
-        port = 57120
-        if (command == "server"):
-            port = 57110
-        tx = argparse.ArgumentParser()
-        tx.add_argument("--ip", default="127.0.0.1", help="osc default ip")
-        tx.add_argument("--port", type=int, default=port,
-                        help="supercollider rx osc port")
-        tx_args = tx.parse_args()
-        client = udp_client.SimpleUDPClient(tx_args.ip, tx_args.port)
+    def handle_note_off(self, command_args):
+        self.midi_handler.send_note(
+            '/noteOff', command_args[0], command_args[1])
 
-        if command == "server":
-            client.send_message(control, args[0])
-        else:
-            control_block = [control]
-            for x in args:
-                control_block.append(x)
-            message = (command, control_block)
-            client.send_message(command, control_block)
+    def handle_control(self, command_args):
+        val = command_args[0]
+        src = command_args[1]
+        chan = command_args[2]
+
+        if self.midi_learn_on:
+            self.midi_learn(val, src, chan)
+
+        knob = self.knobs.find_or_add_knob(src, chan)
+        self.set_patch_param_value(knob.filter_name, param_name, value)
+
+        return
+
+    def set_patch_param_value(self, patch_filename, param_name, value):
+        '''
+        change a synth's param value.
+            params:
+                filter_name: select filter/param.
+                value: filter/param value.
+        '''
+        self.patches.set_patch_param_value(
+            patch_filename, param_name, param_value)
+
+    def midi_learn(self, val, src, chan):
+        self.knobs.set_knob_value(src, chan, val)
+
+    def handle_params(self, command_args):
+        """
+        Processes a /params message
+        """
+
+        patch_filename = command_args[0]
+        param_num = command_args[1]
+        param_name = command_args[2]
+        param_default_val = command_args[3]
+
+        self.patches.set_patch_param_value(
+            patch_filename, param_name, param_value)
+
+    def handle_set_output_devices(self, command_args):
+        self.output_devices.find_or_add_output_device(
+            command_args[0], command_args[1])
+
+    def map_knob_to_filter_name(self, src, chan, filter_name):
+        self.knobs.set_knob_filter_name(src, chan, filter_name)
 
 
 if __name__ == "__main__":
-    sc = OmniCollider()
+    sc = OscInterface()

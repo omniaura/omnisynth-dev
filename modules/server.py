@@ -138,10 +138,9 @@ def supercollider_handler():
                 subprocess.Popen(["sclang", sc_main])
             return "<p>Starting server</p>"
 
-
         elif 'killServer' in requests:
 
-            OI.OmniSynth.exit_sel()  # kills scsynth
+            OI.OmniSynth.stop_sc_synth()  # kills scsynth
             for proc in psutil.process_iter():
                 if proc.name().lower().strip(".exe") in SUPERCOLLIDER_PROCESS_NAMES:
                     print(f'killing process {proc.name()}')
