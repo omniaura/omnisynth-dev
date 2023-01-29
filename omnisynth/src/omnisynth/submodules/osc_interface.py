@@ -13,7 +13,6 @@ sources:
 # used for receiving via OSC
 import argparse
 import json
-from pythonosc import dispatcher
 from pythonosc import osc_server
 
 # Used for sending via OSC
@@ -28,13 +27,13 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 
 import asyncio
 import time
-from .message_handler import MessageHandler
-from .midi_handler import MidiHandler
-from .knob_collection import KnobCollection
-from .output_device_collection import OutputDeviceCollection
-from .patch_collection import PatchCollection
+from submodules.osc_message_handler import OscMessageHandler
+from submodules.midi_handler import MidiHandler
+from submodules.knob_collection import KnobCollection
+from submodules.output_device_collection import OutputDeviceCollection
+from submodules.patch_collection import PatchCollection
 
-from .patch import Patch
+from submodules.patch import Patch
 
 import redis
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
@@ -47,7 +46,6 @@ class OscInterface:
     def __init__(self):
         self.midi_evnt = []
         self.midi_handler = MidiHandler()
-        self.osc_command_dispatcher = dispatcher.Dispatcher()
         self.note_evnt_hist = dict()
 
         # track running state of super collider server
@@ -104,7 +102,7 @@ class OscInterface:
         return self.patches.active_patch
 
     def map_commands_to_dispatcher(self):
-        self.message_handler = MessageHandler()
+        self.message_handler = MessageHandler(self.osc_command_dispatcher)
         self.message_handler.attach_message_listener(
             '/noteOn', self.handle_note_on)
         self.message_handler.attach_message_listener(
@@ -117,13 +115,6 @@ class OscInterface:
             '/setOutputDevices', self.handle_set_output_devices)
         self.message_handler.attach_message_listener(
             '/superColliderStatus', self.handle_super_collider_status)
-
-    def handle_event(self, *args):
-        command_name = args[0]
-        command_args = []
-        for arg in args:
-            command_args.append(arg)
-        self.message_handler.handle_message(command_name, command_args)
 
     def handle_note_on(self, command_args):
         self.midi_handler.send_note(
