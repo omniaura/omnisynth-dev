@@ -76,7 +76,7 @@ class OscInterface:
         await self.loop()
         transport.close()
 
-    def receive(self):
+    def process_midi_event(self):
         asyncio.run(self.init_main())
 
     def add_patch(self, patch_filename):
@@ -102,7 +102,7 @@ class OscInterface:
         return self.patches.active_patch
 
     def map_commands_to_dispatcher(self):
-        self.message_handler = MessageHandler(self.osc_command_dispatcher)
+        self.message_handler = OscMessageHandler(self.osc_command_dispatcher)
         self.message_handler.attach_message_listener(
             '/noteOn', self.handle_note_on)
         self.message_handler.attach_message_listener(

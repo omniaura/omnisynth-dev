@@ -168,6 +168,38 @@ class Omni():
     def map_knob(self, src, chan, filter_name):
         self.osc_interface.map_knob_to_filter_name(src, chan, filter_name)
 
+    # opens UDP stream for MIDI control messages.
+    def open_stream(self, *args):
+        self.osc_interface.process_midi_event()
+        try:
+            # grab first index (tag) if it exists
+            event = self.sc.midi_evnt[0]
+        except IndexError:
+            event = ""
+
+        if event == "/control":
+            # save entire message
+            self.control_evnt = self.sc.midi_evnt
+            if self.midi_learn_on:
+                self.midi_learn(self.control_evnt)
+
+            try:
+                self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
+                knob_table = json.loads(r.get('knobTable'))
+            except:
+                self.knob_map = dict()
+
+            if len(self.knob_map) != 0:
+                for knob_addr in self.knob_map:
+                    filter_name = self.knob_map[knob_addr]
+                    try:
+                        raw_value = knob_table[str(
+                            knob_addr[0])][str(knob_addr[1])]['val']
+                    except:
+                        break
+                    self.filter_sel(filter_name, raw_value)
+            self.sc.midi_evnt = []
+
 
 """
 Main entrypoint
