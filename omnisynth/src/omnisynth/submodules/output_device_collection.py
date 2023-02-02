@@ -8,13 +8,13 @@ class OutputDeviceCollection:
         self.active_output_device = None
 
     def find_or_add_output_device(self, device_index, device_name):
+        new_device = OutputDevice(device_index, device_name)
         for device in self.output_devices:
-            if device.name == device_name and device.index == device_index:
+            if device == new_device:
                 return device
 
-        device = OutputDevice(device_index, device_name)
-        self.output_devices.append(device)
-        return device
+        self.output_devices.append(new_device)
+        return new_device
 
     def get_output_devices(self):
         return self.output_devices

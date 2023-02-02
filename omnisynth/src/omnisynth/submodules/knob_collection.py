@@ -18,10 +18,10 @@ class KnobCollection:
         knob.set_filter_name(filter_name)
 
     def find_or_add_knob(self, src, chan):
+        new_knob = Knob(src, chan)
         for knob in self.knobs:
-            if knob.src == src and knob.chan == chan:
+            if knob == new_knob:
                 return knob
 
-        knob = Knob(src, chan)
-        self.knobs.append(knob)
-        return knob
+        self.knobs.append(new_knob)
+        return new_knob

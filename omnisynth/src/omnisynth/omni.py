@@ -63,21 +63,6 @@ class Omni():
         # used for turning on midi learn.
         self.midi_learn_on = False
 
-        # holds all control knobs and their values.
-        #     organization: self.knob_table[knob_addr] = value
-        #     where knob_addr = (src, chan) from the MIDI cc knob.
-        self.knob_table = dict()
-        r.delete('knobTable')
-
-        # holds all knob mappings to SC params.
-        #     organization: self.knob_map[knob_addr] = filter_name.
-        self.knob_map = dict()
-        r.delete('mapKnob')
-
-        # holds history of last value sent through the UDP stream to SC.
-        #     organization: self.knob_map_hist[filter_name] = value.
-        self.knob_map_hist = dict()
-
         self.note_evnt_hist = dict()
 
         # Table that will be outputted to DAC & Mux.
