@@ -17,6 +17,7 @@ from pythonosc import osc_server
 
 # Used for sending via OSC
 from pythonosc import udp_client
+from pythonosc import dispatcher
 
 # used for sending bundles via OSC
 from pythonosc import osc_bundle_builder
@@ -60,6 +61,8 @@ class OscInterface:
         # array holding our output devices
         self.output_devices = OutputDeviceCollection()
 
+        self.osc_dispatcher = dispatcher.Dispatcher()
+
     async def loop(self):
         # sleep time
         await asyncio.sleep(DELAY_MS * 0.001)
@@ -71,7 +74,7 @@ class OscInterface:
                         help="supercollider tx osc port")
         rx_args = rx.parse_args()
         server = osc_server.AsyncIOOSCUDPServer(
-            (rx_args.ip, rx_args.port), self.osc_command_dispatcher, asyncio.get_event_loop())
+            (rx_args.ip, rx_args.port), self.osc_dispatcher, asyncio.get_event_loop())
         transport, protocol = await server.create_serve_endpoint()
         await self.loop()
         transport.close()
@@ -102,19 +105,14 @@ class OscInterface:
         return self.patches.active_patch
 
     def map_commands_to_dispatcher(self):
-        self.message_handler = OscMessageHandler(self.osc_command_dispatcher)
-        self.message_handler.attach_message_listener(
-            '/noteOn', self.handle_note_on)
-        self.message_handler.attach_message_listener(
-            '/noteOff', self.handle_note_off)
-        self.message_handler.attach_message_listener(
-            '/control', self.handle_control)
-        self.message_handler.attach_message_listener(
-            '/params', self.handle_params)
-        self.message_handler.attach_message_listener(
-            '/setOutputDevices', self.handle_set_output_devices)
-        self.message_handler.attach_message_listener(
-            '/superColliderStatus', self.handle_super_collider_status)
+        self.osc_dispatcher.map('/noteOn', self.handle_note_on)
+        self.osc_dispatcher.map('/noteOff', self.handle_note_off)
+        self.osc_dispatcher.map('/control', self.handle_control)
+        self.osc_dispatcher.map('/params', self.handle_params)
+        self.osc_dispatcher.map('/setOutputDevices',
+                                self.handle_set_output_devices)
+        self.osc_dispatcher.map('/superColliderStatus',
+                                self.handle_super_collider_status)
 
     def handle_note_on(self, command_args):
         self.midi_handler.send_note(
