@@ -1,6 +1,6 @@
 import os
-from submodules.osc_message_sender import OscMessageSender
-from submodules.patch import Patch
+from .osc_message_sender import OscMessageSender
+from .patch import Patch
 
 
 class PatchCollection:

@@ -29,9 +29,9 @@ try:
     from .submodules.osc_message_sender import OscMessageSender
 except:
     # when running locally before building wheel (for testing)
-    from submodules.omnimidi import OmniMidi
-    from submodules.osc_interface import OscInterface
-    from submodules.osc_message_sender import OscMessageSender
+    from .omnimidi import OmniMidi
+    from .osc_interface import OscInterface
+    from .osc_message_sender import OscMessageSender
 
 
 class Omni():

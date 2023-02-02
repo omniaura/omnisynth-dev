@@ -1,5 +1,5 @@
-from submodules.output_device import OutputDevice
-from submodules.osc_message_sender import OscMessageSender
+from .output_device import OutputDevice
+from .osc_message_sender import OscMessageSender
 
 
 class OutputDeviceCollection:

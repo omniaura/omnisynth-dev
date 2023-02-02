@@ -1,6 +1,6 @@
 import os
-from submodules.value_converter import ValueConverter
-from submodules.osc_message_sender import OscMessageSender
+from .value_converter import ValueConverter
+from .osc_message_sender import OscMessageSender
 
 
 class Patch:

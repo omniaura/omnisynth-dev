@@ -27,13 +27,13 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 
 import asyncio
 import time
-from submodules.osc_message_handler import OscMessageHandler
-from submodules.midi_handler import MidiHandler
-from submodules.knob_collection import KnobCollection
-from submodules.output_device_collection import OutputDeviceCollection
-from submodules.patch_collection import PatchCollection
+from .osc_message_handler import OscMessageHandler
+from .midi_handler import MidiHandler
+from .knob_collection import KnobCollection
+from .output_device_collection import OutputDeviceCollection
+from .patch_collection import PatchCollection
 
-from submodules.patch import Patch
+from .patch import Patch
 
 import redis
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
