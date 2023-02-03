@@ -37,7 +37,6 @@ except:
 class Omni():
 
     def __init__(self):
-
         # initialize OSC module for UDP communication with Supercollider.
         self.osc_interface = OscInterface()
         self.osc_interface.map_commands_to_dispatcher()
@@ -54,31 +53,23 @@ class Omni():
         self.pattern = "pattern1"
         r.set("pattern", self.pattern)
 
-        # holds control events from UDP stream.
-        self.control_evnt = []
-
-        # holds note on / off events from UDP stream.
-        self.note_evnt = []
-
         # used for turning on midi learn.
         self.midi_learn_on = False
-
-        self.note_evnt_hist = dict()
-
-        # Table that will be outputted to DAC & Mux.
-        self.cv_table = [[0 for x in range(8)] for y in range(4)]
 
         # Variables For GUI.
         self.mapMode = False
 
-        # all possible synth params.
-        self.param_table = [
-            "attack", "decay", "sustain", "release",
-            "lpf", "hpf", "mod_freq", "lin_start",
-            "lin_stop", "lin_duration"
-        ]
-
     def compile_patches(self, folder, parentDir=''):
+        """
+        Compile patches within a directory
+
+        Args:
+            folder (str): the folder that contains the patch files
+            parentDir (str, optional): the parent directory of the folder. defaults to ''
+
+        Returns:
+            PatchCollection: the collection of compiled patches
+        """
         if len(parentDir) != 0:
             directory = parentDir + "%s/" % folder
         else:
@@ -94,10 +85,12 @@ class Omni():
         return self.osc_interface.patches
 
     # saves state of which song is currently selected.
+    # TODO: refactor me
     def song_sel(self, song_name):
         self.song = song_name
 
     # toggles and controls patterns created in supercollider
+    # TODO: refactor me
     def pattern_sel(self, pattern_name, action, *args):
         if not len(args) == 0:
             parentDir = args[0]
@@ -117,9 +110,18 @@ class Omni():
         r.set("pattern", self.pattern)
 
     def stop_sc_synth(self):
+        """
+        Stops the ScSynth process
+        """
         OscMessageSender.send_omni_message('stopScSynth')
 
     def sc_server_boot_status(self):
+        """
+        The status of the SuperCollider server
+
+        Returns:
+            str: 'Running' if the server is running, 'Stopped' if the server is stopped
+        """
         if self.osc_interface.super_collider_booted:
             return 'Running'
 
@@ -136,6 +138,7 @@ class Omni():
         self.osc_interface.set_patch_param_value(
             self.osc_interface.active_patch().filename, param_name, value)
 
+    # TODO: refactor me
     def pattern_param_sel(self, param_name, value):
         '''
         change a patterns's param value.
@@ -153,9 +156,31 @@ class Omni():
         OscMessageSender.send_message(
             command, control, parameter, value)
 
-    # creates dict for all control knobs on MIDI controller.
+    def active_patch(self):
+        """
+        Retrieves the currently active Patch
+
+        Returns:
+            Patch: the currently active patch
+        """
+        return self.osc_interface.patch_collection.active_patch
+
+    def set_active_patch(self, patch_filename):
+        """
+        Sets the currently active patch. Compiles the patch if not already compiled
+
+        Args:
+            patch_filename (str): the filename of the patch
+        """
+        self.osc_interface.patch_collection.set_active_patch(patch_filename)
 
     def midi_learn(self, midi_msg):
+        """
+        Set a knob value from a MIDI message
+
+        Args:
+            midi_msg (list): the midi message
+        """
         if len(midi_msg) != 4:
             return
 
@@ -165,40 +190,20 @@ class Omni():
 
         self.osc_interface.set_knob_value(val, src, chan)
 
-    def map_knob(self, src, chan, filter_name):
-        self.osc_interface.map_knob_to_filter_name(src, chan, filter_name)
+    def map_knob(self, src, chan, param_name):
+        """
+        Map a knob to a patch parameter name
+
+        Args:
+            src (number): the knob src
+            chan (number): the knob channel
+            param_name (str): the patch parameter name to map this knob to
+        """
+        self.osc_interface.map_knob_to_filter_name(src, chan, param_name)
 
     # opens UDP stream for MIDI control messages.
     def open_stream(self, *args):
         self.osc_interface.process_midi_event()
-        try:
-            # grab first index (tag) if it exists
-            event = self.sc.midi_evnt[0]
-        except IndexError:
-            event = ""
-
-        if event == "/control":
-            # save entire message
-            self.control_evnt = self.sc.midi_evnt
-            if self.midi_learn_on:
-                self.midi_learn(self.control_evnt)
-
-            try:
-                self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
-                knob_table = json.loads(r.get('knobTable'))
-            except:
-                self.knob_map = dict()
-
-            if len(self.knob_map) != 0:
-                for knob_addr in self.knob_map:
-                    filter_name = self.knob_map[knob_addr]
-                    try:
-                        raw_value = knob_table[str(
-                            knob_addr[0])][str(knob_addr[1])]['val']
-                    except:
-                        break
-                    self.filter_sel(filter_name, raw_value)
-            self.sc.midi_evnt = []
 
 
 """

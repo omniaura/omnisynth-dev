@@ -53,10 +53,10 @@ class OscInterface:
         self.super_collider_booted = False
 
         # our patches
-        self.patches = PatchCollection()
+        self.patch_collection = PatchCollection()
 
         # knobs
-        self.knobs = KnobCollection()
+        self.knob_collection = KnobCollection()
 
         # array holding our output devices
         self.output_devices = OutputDeviceCollection()
@@ -83,7 +83,7 @@ class OscInterface:
         asyncio.run(self.init_main())
 
     def add_patch(self, patch_filename):
-        self.patches.find_or_add_patch(patch_filename)
+        self.patch_collection.find_or_add_patch(patch_filename)
 
     def set_patch_param_value(self, patch_filename, param_name, value):
         '''
@@ -92,17 +92,17 @@ class OscInterface:
                 filter_name: select filter/param.
                 value: filter/param value.
         '''
-        self.patches.set_patch_param_value(
+        self.patch_collection.set_patch_param_value(
             patch_filename, param_name, param_value)
 
     def set_knob_value(self, val, src, chan):
-        self.knobs.set_knob_value(src, chan, val)
+        self.knob_collection.set_knob_value(src, chan, val)
 
     def map_knob_to_filter_name(self, src, chan, filter_name):
-        self.knobs.set_knob_filter_name(src, chan, filter_name)
+        self.knob_collection.set_knob_filter_name(src, chan, filter_name)
 
     def active_patch(self):
-        return self.patches.active_patch
+        return self.patch_collection.active_patch
 
     def map_commands_to_dispatcher(self):
         self.osc_dispatcher.map('/noteOn', self.handle_note_on)
@@ -130,7 +130,7 @@ class OscInterface:
         if self.midi_learn_on:
             self.set_knob_value(val, src, chan)
 
-        knob = self.knobs.find_or_add_knob(src, chan)
+        knob = self.knob_collection.find_or_add_knob(src, chan)
         self.set_patch_param_value(knob.filter_name, param_name, value)
 
     def handle_params(self, command_args):
@@ -143,7 +143,7 @@ class OscInterface:
         param_name = command_args[2]
         param_default_val = command_args[3]
 
-        self.patches.set_patch_param_value(
+        self.patch_collection.set_patch_param_value(
             patch_filename, param_name, param_default_val)
 
     def handle_set_output_devices(self, command_args):

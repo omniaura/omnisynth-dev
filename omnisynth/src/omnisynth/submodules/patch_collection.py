@@ -73,3 +73,6 @@ class PatchCollection:
             if patch.filename == filename:
                 return true
         return false
+
+    def patch_count(self):
+        return len(patches)
