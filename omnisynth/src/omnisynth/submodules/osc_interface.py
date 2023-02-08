@@ -28,8 +28,7 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 
 import asyncio
 import time
-from .osc_message_handler import OscMessageHandler
-from .midi_handler import MidiHandler
+from .teensy_midi_handler import TeensyMidiHandler
 from .knob_collection import KnobCollection
 from .output_device_collection import OutputDeviceCollection
 from .patch_collection import PatchCollection
@@ -46,7 +45,7 @@ class OscInterface:
 
     def __init__(self):
         self.midi_evnt = []
-        self.midi_handler = MidiHandler()
+        self.midi_handler = TeensyMidiHandler()
         self.note_evnt_hist = dict()
 
         # track running state of super collider server
@@ -114,18 +113,18 @@ class OscInterface:
         self.osc_dispatcher.map('/superColliderStatus',
                                 self.handle_super_collider_status)
 
-    def handle_note_on(self, command_args):
+    def handle_note_on(self, *command_args):
         self.midi_handler.send_note(
-            '/noteOn', command_args[0], command_args[1])
+            '/noteOn', command_args[1], command_args[2])
 
-    def handle_note_off(self, command_args):
+    def handle_note_off(self, *command_args):
         self.midi_handler.send_note(
-            '/noteOff', command_args[0], command_args[1])
+            '/noteOff', command_args[1], command_args[2])
 
-    def handle_control(self, command_args):
-        val = command_args[0]
-        src = command_args[1]
-        chan = command_args[2]
+    def handle_control(self, *command_args):
+        val = command_args[1]
+        src = command_args[2]
+        chan = command_args[3]
 
         if self.midi_learn_on:
             self.set_knob_value(val, src, chan)
@@ -133,25 +132,39 @@ class OscInterface:
         knob = self.knob_collection.find_or_add_knob(src, chan)
         self.set_patch_param_value(knob.filter_name, param_name, value)
 
-    def handle_params(self, command_args):
+    def handle_params(self, *command_args):
         """
         Processes a /params message
         """
 
-        patch_filename = command_args[0]
-        param_num = command_args[1]
-        param_name = command_args[2]
-        param_default_val = command_args[3]
+        patch_filename = command_args[1]
+        param_num = command_args[2]
+        param_name = command_args[3]
+        param_default_val = command_args[4]
 
         self.patch_collection.set_patch_param_value(
             patch_filename, param_name, param_default_val)
 
-    def handle_set_output_devices(self, command_args):
-        self.output_devices.find_or_add_output_device(
-            command_args[0], command_args[1])
+    def handle_set_output_devices(self, *command_args):
+        """
+        Processes a /setOutputDevices message
+        Message: [[device_index1, device_name1], ...]
 
-    def handle_super_collider_status(self, command_args):
-        if command_args[0] == 'running':
+        Args:
+            command_args (array): the command arguments
+        """
+        print('Set outdev command args:')
+        print(command_args)
+
+        for i in range(1, len(command_args)):
+            device = command_args[i].split(b',')
+            self.output_devices.find_or_add_output_device(
+                int.from_bytes(device[0], 'big'), device[1].decode()[1:]
+            )
+
+    def handle_super_collider_status(self, *command_args):
+        if command_args[1] == 'running':
+            print(f'Setting supercollider server status to running...')
             self.super_collider_booted = True
 
 

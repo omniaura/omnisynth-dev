@@ -6,6 +6,8 @@ author: Omar Barazanji (omar@omniaura.co)
 Python 3.7.x
 """
 
+from submodules.osc_message_sender import OscMessageSender
+from submodules.osc_interface import OscInterface
 import platform
 import redis
 import json
@@ -22,16 +24,11 @@ elif platform.system() == 'Darwin':
     OS = 'Darwin'
 
 # Used for sending / receiving data from supercollider.
-try:
-    # when import omnisynth is called (for production)
-    from .submodules.omnimidi import OmniMidi
-    from .submodules.osc_interface import OscInterface
-    from .submodules.osc_message_sender import OscMessageSender
-except:
-    # when running locally before building wheel (for testing)
-    from .omnimidi import OmniMidi
-    from .osc_interface import OscInterface
-    from .osc_message_sender import OscMessageSender
+# when import omnisynth is called (for production)
+# # when running locally before building wheel (for testing)
+# from .omnimidi import OmniMidi
+# from .osc_interface import OscInterface
+# from .osc_message_sender import OscMessageSender
 
 
 class Omni():
@@ -82,7 +79,7 @@ class Omni():
             self.osc_interface.add_patch(patch_filename)
 
         # Return the patches we have compiled
-        return self.osc_interface.patches
+        return self.osc_interface.patch_collection
 
     # saves state of which song is currently selected.
     # TODO: refactor me
@@ -225,9 +222,10 @@ if __name__ == "__main__":
             'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
 
     OmniSynth = Omni()
-    OmniSynth.sc_compile(OMNISYNTH_PATH+"/patches")  # compiles all synthDefs.
+    # compiles all synthDefs.
+    OmniSynth.compile_patches(OMNISYNTH_PATH+"/patches")
     # selects first patch.
-    OmniSynth.select_patch(patch_filename)("tone1", OMNISYNTH_PATH)
+    OmniSynth.set_active_patch(OMNISYNTH_PATH + "tone1.scd")
     OmniSynth.midi_learn_on = True  # turn on midi learn.
     sc_main = OMNISYNTH_PATH + "main.scd"
 

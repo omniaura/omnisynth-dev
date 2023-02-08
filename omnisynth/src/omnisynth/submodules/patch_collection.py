@@ -31,6 +31,7 @@ class PatchCollection:
         Args:
             patch_filename (String): the filename of the patch to set active
         """
+        print(f'Setting active patch to {patch_filename}')
         patch = self.find_or_add_patch(patch_filename)
 
         directory = f"patches/{patch_filename}.scd"
@@ -49,9 +50,9 @@ class PatchCollection:
         """
 
         for patch in self.patches:
-            if patch.filename == filename:
+            if patch.filename == patch_filename:
                 return patch
-        patch = Patch(filename)
+        patch = Patch(patch_filename)
         patch.compile()
         self.patches.append(patch)
         return patch

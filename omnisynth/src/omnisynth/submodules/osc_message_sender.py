@@ -1,5 +1,6 @@
 # Used for sending via OSC
 from pythonosc import udp_client
+import argparse
 
 OSC_SERVER_PORT = 57120
 OSC_CLIENT_PORT = 57110

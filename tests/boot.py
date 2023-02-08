@@ -18,11 +18,12 @@ dsp_dir = current_dir.replace(
 os.chdir('../')
 
 OmniSynth = omni.Omni()
-OmniSynth.sc_compile(dsp_dir+"/patches")  # compiles all synthDefs.
+# compiles all synthDefs.
+OmniSynth.compile_patches(dsp_dir+"/patches")
 # selects first patch.
-OmniSynth.select_patch(patch_filename)("tone1", dsp_dir)
+OmniSynth.set_active_patch("tone1", dsp_dir)
 OmniSynth.midi_learn_on = True  # turn on midi learn.
 
 # Start Python OSC mainloop (this is an Event at 60 Hz in the GUI).
-while (True):
-    OmniSynth.open_stream()
+# while (True):
+#     OmniSynth.open_stream()

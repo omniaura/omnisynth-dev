@@ -13,6 +13,8 @@ class OutputDeviceCollection:
             if device == new_device:
                 return device
 
+        print(
+            f'Adding output device with index {device_index} and name {device_name}...')
         self.output_devices.append(new_device)
         return new_device
 
