@@ -50,9 +50,6 @@ class Omni():
         self.pattern = "pattern1"
         r.set("pattern", self.pattern)
 
-        # used for turning on midi learn.
-        self.midi_learn_on = False
-
         # Variables For GUI.
         self.mapMode = False
 
@@ -202,6 +199,9 @@ class Omni():
     def open_stream(self, *args):
         self.osc_interface.process_midi_event()
 
+    def set_midi_learn(self, on):
+        self.osc_interface.midi_learn_on = on
+
 
 """
 Main entrypoint
@@ -222,11 +222,7 @@ if __name__ == "__main__":
             'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
 
     OmniSynth = Omni()
-    # compiles all synthDefs.
-    OmniSynth.compile_patches(OMNISYNTH_PATH+"/patches")
-    # selects first patch.
-    OmniSynth.set_active_patch(OMNISYNTH_PATH + "tone1.scd")
-    OmniSynth.midi_learn_on = True  # turn on midi learn.
+    OmniSynth.set_midi_learn(True)  # turn on midi learn.
     sc_main = OMNISYNTH_PATH + "main.scd"
 
     def sc_thread():
@@ -237,11 +233,24 @@ if __name__ == "__main__":
             subprocess.Popen(["sclang", sc_main])
 
     def omni_thread():
+        compiled = False
         while (True):
             OmniSynth.open_stream()
+            if OmniSynth.sc_server_boot_status() == 'Running':
+                if not compiled:
+                    # compiles all synthDefs.
+                    OmniSynth.compile_patches(
+                        OMNISYNTH_PATH+"patches")
+                    compiled = True
 
     omnithread = Thread(target=omni_thread)
     omnithread.start()
+
     scthread = Thread(target=sc_thread)
     scthread.start()
     scthread.join()
+    import time
+    time.sleep(10)
+    print('\n\n\nSelecting active patch!\n\n\n')
+    OmniSynth.set_active_patch(
+        OMNISYNTH_PATH + "patches/tone1.scd")

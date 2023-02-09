@@ -12,4 +12,4 @@ class Knob:
         self.filter_name = filter_name
 
     def __eq__(self, obj):
-        return isinstance(obj, Knob) and obj.src == self.src and obj.chan == chan
+        return isinstance(obj, Knob) and obj.src == self.src and obj.chan == self.chan

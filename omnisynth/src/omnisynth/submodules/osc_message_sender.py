@@ -2,8 +2,8 @@
 from pythonosc import udp_client
 import argparse
 
-OSC_SERVER_PORT = 57120
-OSC_CLIENT_PORT = 57110
+OSC_SERVER_PORT = 57110
+OSC_CLIENT_PORT = 57120
 
 server_tx = argparse.ArgumentParser()
 server_tx.add_argument("--ip", default="127.0.0.1", help="osc default ip")
@@ -30,7 +30,8 @@ class OscMessageSender:
         control_block = [msg]
         for x in msgArgs:
             control_block.append(x)
-        message = (command, control_block)
+        print(f'Command: {command}')
+        print(f'Control block: {control_block}')
         OSC_CLIENT_UDP_CLIENT.send_message(command, control_block)
 
     # def send_message(command, control, *args):

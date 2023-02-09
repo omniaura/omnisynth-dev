@@ -5,7 +5,6 @@ from .osc_message_sender import OscMessageSender
 
 class Patch:
     def __init__(self, filename):
-        print(f'Initializing new patch {filename}...')
         self.filename = filename
         self.params = dict()
         self.compiled = False
@@ -54,6 +53,5 @@ class Patch:
 
         print(f'Setting param {param_name} to {param_value}...')
         self.params[param_name] = param_value
-        real_value = self.get_param_real_value(param_name)
         OscMessageSender.send_client_message(
-            f"/{self.filename}", "setParam", param_name, real_value)
+            f"/{self.filename}", "setParam", param_name, param_value)

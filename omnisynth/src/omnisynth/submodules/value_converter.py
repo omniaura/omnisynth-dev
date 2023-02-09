@@ -1,3 +1,5 @@
+import numpy as np
+
 FILTER_PARAMS = ['lpf', 'hpf']
 ADSR_PARAMS = ['attack', 'decay', 'sustain', 'release']
 LIN_PARAMS = ['lin_start', 'lin_stop']
@@ -10,14 +12,14 @@ class ValueConverter:
 
     """
     def converted_value(param_name, param_value):
-        if self.param_name in FILTER_PARAMS:
-            return self.__to_freq()
-        if self.param_name in ADSR_PARAMS:
-            return self.__to_adsr()
-        if self.param_name in LIN_PARAMS:
-            return self.__to_lin()
-        if self.param_name in DURATION_PARAMS:
-            return self.__to_duration()
+        if param_name in FILTER_PARAMS:
+            return ValueConverter.__to_freq(param_value)
+        if param_name in ADSR_PARAMS:
+            return ValueConverter.__to_adsr(param_value)
+        if param_name in LIN_PARAMS:
+            return ValueConverter.__to_lin(param_value)
+        if param_name in DURATION_PARAMS:
+            return ValueConverter.__to_duration(param_value)
         return 0
 
     def __to_freq(val):

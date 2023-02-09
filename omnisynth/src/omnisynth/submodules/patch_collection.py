@@ -21,7 +21,12 @@ class PatchCollection:
         """
 
         patch = self.find_or_add_patch(patch_filename)
+
         patch.set_param_value(param_name, param_value)
+
+    def set_patch_param_internal_value(self, patch_filename, param_name, param_value):
+        patch = self.find_or_add_patch(patch_filename)
+        patch.params[param_name] = param_value
 
     def set_active_patch(self, patch_filename):
         """
@@ -34,10 +39,8 @@ class PatchCollection:
         print(f'Setting active patch to {patch_filename}')
         patch = self.find_or_add_patch(patch_filename)
 
-        directory = f"patches/{patch_filename}.scd"
-        patch_path = os.path.abspath(directory).replace("\\", "/")
         OscMessageSender.send_omni_message(
-            "selectPatch", patch_filename, patch_path)
+            "selectPatch", patch_filename)
 
         self.active_patch = patch
 
@@ -72,8 +75,8 @@ class PatchCollection:
 
         for patch in self.patches:
             if patch.filename == filename:
-                return true
-        return false
+                return True
+        return False
 
     def patch_count(self):
         return len(patches)

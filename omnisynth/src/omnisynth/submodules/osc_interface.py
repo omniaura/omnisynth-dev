@@ -62,6 +62,8 @@ class OscInterface:
 
         self.osc_dispatcher = dispatcher.Dispatcher()
 
+        self.midi_learn_on = False
+
     async def loop(self):
         # sleep time
         await asyncio.sleep(DELAY_MS * 0.001)
@@ -114,14 +116,19 @@ class OscInterface:
                                 self.handle_super_collider_status)
 
     def handle_note_on(self, *command_args):
-        self.midi_handler.send_note(
-            '/noteOn', command_args[1], command_args[2])
+        pass
+        # self.midi_handler.send_note(
+        #     '/noteOn', command_args[1], command_args[2])
 
     def handle_note_off(self, *command_args):
-        self.midi_handler.send_note(
-            '/noteOff', command_args[1], command_args[2])
+        pass
+        # self.midi_handler.send_note(
+        #     '/noteOff', command_args[1], command_args[2])
 
     def handle_control(self, *command_args):
+        print('/control command args:')
+        print(command_args)
+
         val = command_args[1]
         src = command_args[2]
         chan = command_args[3]
@@ -130,19 +137,23 @@ class OscInterface:
             self.set_knob_value(val, src, chan)
 
         knob = self.knob_collection.find_or_add_knob(src, chan)
-        self.set_patch_param_value(knob.filter_name, param_name, value)
+        if knob.filter_name != '':
+            self.set_patch_param_value(
+                self.active_patch().filename, knob.filter_name, value)
 
     def handle_params(self, *command_args):
         """
         Processes a /params message
         """
+        print('/params command args:')
+        print(command_args)
 
         patch_filename = command_args[1]
         param_num = command_args[2]
         param_name = command_args[3]
         param_default_val = command_args[4]
 
-        self.patch_collection.set_patch_param_value(
+        self.patch_collection.set_patch_param_internal_value(
             patch_filename, param_name, param_default_val)
 
     def handle_set_output_devices(self, *command_args):
@@ -162,7 +173,11 @@ class OscInterface:
                 int.from_bytes(device[0], 'big'), device[1].decode()[1:]
             )
 
+        print('Done setting output devices')
+
     def handle_super_collider_status(self, *command_args):
+        print('Super collider status command args:')
+        print(command_args)
         if command_args[1] == 'running':
             print(f'Setting supercollider server status to running...')
             self.super_collider_booted = True
