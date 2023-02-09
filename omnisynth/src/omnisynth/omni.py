@@ -8,6 +8,7 @@ Python 3.7.x
 
 from submodules.osc_message_sender import OscMessageSender
 from submodules.osc_interface import OscInterface
+from submodules.patch import Patch
 import platform
 import redis
 import json
@@ -37,10 +38,6 @@ class Omni():
         # initialize OSC module for UDP communication with Supercollider.
         self.osc_interface = OscInterface()
         self.osc_interface.map_commands_to_dispatcher()
-
-        # current synth selected.
-        self.synth = "tone1"
-        r.set('synth', self.synth)
 
         # current song selected.
         self.song = "song1"
@@ -121,16 +118,15 @@ class Omni():
 
         return 'Stopped'
 
-    def set_patch_parameter_value(self, param_name, value):
+    def set_active_patch_param_value(self, param_name, value):
         """
         Change a parameter value for the currently active patch
 
         Args:
-            param_name (String): _description_
-            value (number): _description_
+            param_name (String): the name of the parameter
+            value (number): the value of the parameter
         """
-        self.osc_interface.set_patch_param_value(
-            self.osc_interface.active_patch().filename, param_name, value)
+        self.osc_interface.active_patch().sync_param(param_name, value)
 
     # TODO: refactor me
     def pattern_param_sel(self, param_name, value):
@@ -241,6 +237,8 @@ if __name__ == "__main__":
                     # compiles all synthDefs.
                     OmniSynth.compile_patches(
                         OMNISYNTH_PATH+"patches")
+                    OmniSynth.set_active_patch(
+                        OMNISYNTH_PATH + "patches/tone1.scd")
                     compiled = True
 
     omnithread = Thread(target=omni_thread)
@@ -249,8 +247,3 @@ if __name__ == "__main__":
     scthread = Thread(target=sc_thread)
     scthread.start()
     scthread.join()
-    import time
-    time.sleep(10)
-    print('\n\n\nSelecting active patch!\n\n\n')
-    OmniSynth.set_active_patch(
-        OMNISYNTH_PATH + "patches/tone1.scd")

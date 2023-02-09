@@ -86,16 +86,6 @@ class OscInterface:
     def add_patch(self, patch_filename):
         self.patch_collection.find_or_add_patch(patch_filename)
 
-    def set_patch_param_value(self, patch_filename, param_name, value):
-        '''
-        change a synth's param value.
-            params:
-                filter_name: select filter/param.
-                value: filter/param value.
-        '''
-        self.patch_collection.set_patch_param_value(
-            patch_filename, param_name, param_value)
-
     def set_knob_value(self, val, src, chan):
         self.knob_collection.set_knob_value(src, chan, val)
 
@@ -109,7 +99,8 @@ class OscInterface:
         self.osc_dispatcher.map('/noteOn', self.handle_note_on)
         self.osc_dispatcher.map('/noteOff', self.handle_note_off)
         self.osc_dispatcher.map('/control', self.handle_control)
-        self.osc_dispatcher.map('/params', self.handle_params)
+        self.osc_dispatcher.map(
+            '/initPatchParams', self.handle_init_patch_params)
         self.osc_dispatcher.map('/setOutputDevices',
                                 self.handle_set_output_devices)
         self.osc_dispatcher.map('/superColliderStatus',
@@ -126,35 +117,29 @@ class OscInterface:
         #     '/noteOff', command_args[1], command_args[2])
 
     def handle_control(self, *command_args):
-        print('/control command args:')
-        print(command_args)
-
         val = command_args[1]
         src = command_args[2]
         chan = command_args[3]
 
-        if self.midi_learn_on:
-            self.set_knob_value(val, src, chan)
-
         knob = self.knob_collection.find_or_add_knob(src, chan)
+
+        if self.midi_learn_on:
+            knob.set_value(val, src, chan)
+
         if knob.filter_name != '':
-            self.set_patch_param_value(
-                self.active_patch().filename, knob.filter_name, value)
+            self.active_patch().sync_param(knob.filter_name, value)
 
-    def handle_params(self, *command_args):
+    def handle_init_patch_params(self, *command_args):
         """
-        Processes a /params message
+        Processes a /initPatchParams message
         """
-        print('/params command args:')
-        print(command_args)
-
         patch_filename = command_args[1]
         param_num = command_args[2]
         param_name = command_args[3]
         param_default_val = command_args[4]
 
-        self.patch_collection.set_patch_param_internal_value(
-            patch_filename, param_name, param_default_val)
+        patch = self.patch_collection.find_or_add_patch(patch_filename)
+        patch.set_param_initial_value(param_name, param_value)
 
     def handle_set_output_devices(self, *command_args):
         """
@@ -164,9 +149,6 @@ class OscInterface:
         Args:
             command_args (array): the command arguments
         """
-        print('Set outdev command args:')
-        print(command_args)
-
         for i in range(1, len(command_args)):
             device = command_args[i].split(b',')
             self.output_devices.find_or_add_output_device(
@@ -176,8 +158,6 @@ class OscInterface:
         print('Done setting output devices')
 
     def handle_super_collider_status(self, *command_args):
-        print('Super collider status command args:')
-        print(command_args)
         if command_args[1] == 'running':
             print(f'Setting supercollider server status to running...')
             self.super_collider_booted = True

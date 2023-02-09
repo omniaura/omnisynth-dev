@@ -9,21 +9,6 @@ class PatchCollection:
         self.patches = []
         self.active_patch = None
 
-    def set_patch_param_value(self, patch_filename, param_name, param_value):
-        """
-        Set a patch parameter value. If a patch with the given filename has not yet been added and compiled,
-        it will be before the value is set.
-
-        Args:
-            patch_filename (String): the filename of the patch
-            param_name (String): the name of the patch parameter
-            param_value (Number): the value to set the patch parameter to
-        """
-
-        patch = self.find_or_add_patch(patch_filename)
-
-        patch.set_param_value(param_name, param_value)
-
     def set_patch_param_internal_value(self, patch_filename, param_name, param_value):
         patch = self.find_or_add_patch(patch_filename)
         patch.params[param_name] = param_value

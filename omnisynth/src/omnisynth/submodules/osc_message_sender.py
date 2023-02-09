@@ -30,19 +30,7 @@ class OscMessageSender:
         control_block = [msg]
         for x in msgArgs:
             control_block.append(x)
-        print(f'Command: {command}')
-        print(f'Control block: {control_block}')
         OSC_CLIENT_UDP_CLIENT.send_message(command, control_block)
-
-    # def send_message(command, control, *args):
-    #     if command == "server":
-    #         client.send_message(control, args[0])
-    #     else:
-    #         control_block = [control]
-    #         for x in args:
-    #             control_block.append(x)
-    #         message = (command, control_block)
-    #         client.send_message(command, control_block)
 
     def send_omni_message(msg, *msgArgs):
         OscMessageSender.send_client_message('/omni', msg, *msgArgs)

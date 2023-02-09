@@ -23,18 +23,6 @@ class Patch:
 
         self.compiled = True
 
-    def get_param_value(self, param_name):
-        """
-        Retrieve the value of the given parameter for this patch
-
-        Args:
-            param_name (String): the parameter name
-
-        Returns:
-            Number: the value of the parameter
-        """
-        return self.params[param_name]
-
     def get_param_real_value(self, param_name):
         """
         Retrieve the real MIDI value of the given parameter for this patch
@@ -47,11 +35,30 @@ class Patch:
         """
         return ValueConverter.converted_value(param_name, self.params[param_name])
 
-    def set_param_value(self, param_name, param_value):
+    def set_param_initial_value(self, param_name, param_value):
+        """
+        Adds the parameter to this patch if not already added, and sets the value to the given value.
+
+        Args:
+            param_name (_type_): _description_
+            param_value (_type_): _description_
+        """
+        self.params[param_name] = param_value
+
+    def sync_param(self, param_name, param_value):
+        """
+        Syncs a parameter with OSC by sending the 'setParam' message
+
+        Args:
+            param_name (_type_): _description_
+            param_value (_type_): _description_
+        """
         if not self.compiled:
             self.compile()
 
-        print(f'Setting param {param_name} to {param_value}...')
         self.params[param_name] = param_value
         OscMessageSender.send_client_message(
             f"/{self.filename}", "setParam", param_name, param_value)
+
+    def __eq__(self, obj):
+        return isinstance(obj, Patch) and obj.filename == self.filename

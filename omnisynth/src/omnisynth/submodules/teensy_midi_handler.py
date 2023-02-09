@@ -24,8 +24,9 @@ class TeensyMidiHandler:
         elif os.path.exists('/dev/ttyACM1'):
             self.midi_connection = MidiConnector('/dev/ttyACM1')
         if self.midi_connection == 0:
-            print('Could not establish Teensy MIDI connection! Exiting...')
-        print('MIDI connection established.')
+            print('Could not establish Teensy MIDI connection!')
+        else:
+            print('Teensy MIDI connection established.')
 
     def send_note(command, note, velocity):
         if self.midi_connection == 0:
@@ -43,7 +44,3 @@ class TeensyMidiHandler:
             self.midi_connection.conn.write(msg)
         else:
             print(f'Unexpected MIDI command received: ${command}')
-
-
-if __name__ == "__main__":
-    pass
