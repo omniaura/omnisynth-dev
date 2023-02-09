@@ -70,7 +70,8 @@ class Omni():
         for patch in os.listdir(directory):
             filedir = directory + patch
             patch_filename = os.path.abspath(filedir).replace("\\", "/")
-            self.osc_interface.add_patch(patch_filename)
+            self.osc_interface.patch_collection.find_or_add_patch(
+                patch_filename)
 
         # Return the patches we have compiled
         return self.osc_interface.patch_collection
@@ -126,7 +127,8 @@ class Omni():
             param_name (String): the name of the parameter
             value (number): the value of the parameter
         """
-        self.osc_interface.active_patch().sync_param(param_name, value)
+        self.osc_interface.patch_collection.active_patch.sync_param(
+            param_name, value)
 
     # TODO: refactor me
     def pattern_param_sel(self, param_name, value):
@@ -178,7 +180,7 @@ class Omni():
         src = midi_msg[2]
         chan = midi_msg[3]
 
-        self.osc_interface.set_knob_value(val, src, chan)
+        self.osc_interface.knob_collection.set_knob_value(val, src, chan)
 
     def map_knob(self, src, chan, param_name):
         """

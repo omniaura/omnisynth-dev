@@ -48,6 +48,8 @@ class OscInterface:
         self.midi_handler = TeensyMidiHandler()
         self.note_evnt_hist = dict()
 
+        self.active_patch = None
+
         # track running state of super collider server
         self.super_collider_booted = False
 
@@ -83,17 +85,23 @@ class OscInterface:
     def process_midi_event(self):
         asyncio.run(self.init_main())
 
-    def add_patch(self, patch_filename):
-        self.patch_collection.find_or_add_patch(patch_filename)
-
-    def set_knob_value(self, val, src, chan):
-        self.knob_collection.set_knob_value(src, chan, val)
-
     def map_knob_to_filter_name(self, src, chan, filter_name):
         self.knob_collection.set_knob_filter_name(src, chan, filter_name)
 
-    def active_patch(self):
-        return self.patch_collection.active_patch
+    def set_active_patch(self, patch_filename):
+        """
+        Sets the patch with the given filename to the currently active patch. If the patch has not yet been added and compiled,
+        it will be before being set active.
+
+        Args:
+            patch_filename (String): the filename of the patch to set active
+        """
+        print(f'Setting active patch to {patch_filename}')
+        self.active_patch = self.patch_collection.find_or_add_patch(
+            patch_filename)
+
+        OscMessageSender.send_omni_message(
+            "selectPatch", patch_filename)
 
     def map_commands_to_dispatcher(self):
         self.osc_dispatcher.map('/noteOn', self.handle_note_on)
@@ -127,7 +135,8 @@ class OscInterface:
             knob.set_value(val, src, chan)
 
         if knob.filter_name != '':
-            self.active_patch().sync_param(knob.filter_name, value)
+            self.patch_collection.active_patch.sync_param(
+                knob.filter_name, val)
 
     def handle_init_patch_params(self, *command_args):
         """
@@ -139,7 +148,7 @@ class OscInterface:
         param_default_val = command_args[4]
 
         patch = self.patch_collection.find_or_add_patch(patch_filename)
-        patch.set_param_initial_value(param_name, param_value)
+        patch.set_param_initial_value(param_name, param_default_val)
 
     def handle_set_output_devices(self, *command_args):
         """
