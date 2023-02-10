@@ -6,6 +6,7 @@ from .osc_message_sender import OscMessageSender
 class Patch:
     def __init__(self, filename):
         self.filename = filename
+        self.name = filename.split('/')[-1].split('.')[0]
         self.params = dict()
         self.compiled = False
 
@@ -23,7 +24,7 @@ class Patch:
 
         self.compiled = True
 
-    def get_param_real_value(self, param_name):
+    def get_interpolated_param_value(self, param_name):
         """
         Retrieve the real MIDI value of the given parameter for this patch
 

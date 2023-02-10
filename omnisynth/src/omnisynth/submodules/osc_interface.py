@@ -43,12 +43,8 @@ DELAY_MS = 50
 
 
 class OscInterface:
-
     def __init__(self):
-        self.midi_evnt = []
         self.midi_handler = TeensyMidiHandler()
-        self.note_evnt_hist = dict()
-
         self.current_control_event = [None, None, None]
 
         # track running state of super collider server
@@ -105,6 +101,21 @@ class OscInterface:
 
         OscMessageSender.send_omni_message(
             "selectPatch", patch_filename)
+
+    def set_active_pattern(self, pattern_filename):
+        """
+        Sets the pattern with the given filename to the currently active pattern. If the pattern has not yet been added and compiled,
+        it will be before being set active.
+
+        Args:
+            pattern_filename (String): the filename of the pattern to set active
+        """
+        print(f'Setting active pattern to {pattern_filename}')
+        self.active_pattern = self.pattern_collection.find_or_add_pattern(
+            pattern_filename)
+
+        OscMessageSender.send_omni_message(
+            "selectPattern", pattern_filename)
 
     def map_commands_to_dispatcher(self):
         self.osc_dispatcher.map('/noteOn', self.handle_note_on)

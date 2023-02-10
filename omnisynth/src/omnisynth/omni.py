@@ -83,11 +83,6 @@ class Omni():
         # Return the patches we have compiled
         return self.osc_interface.patch_collection
 
-    # saves state of which song is currently selected.
-    # TODO: refactor me
-    def song_sel(self, song_name):
-        self.song = song_name
-
     def start_pattern(self, pattern_name):
         self.osc_interface.pattern_collection.find_or_add_pattern(
             pattern_name).start()
@@ -138,11 +133,10 @@ class Omni():
             value (number): the value of the parameter
         """
         real_value = ValueConverter.converted_value(param_name, value)
-        self.osc_interface.patch_collection.active_patch.sync_param(
+        self.osc_interface.active_patch.sync_param(
             param_name, real_value)
 
-    # TODO: refactor me
-    def pattern_param_sel(self, param_name, value):
+    def set_active_pattern_param_value(self, param_name, value):
         '''
         change a patterns's param value.
             params:
@@ -150,14 +144,7 @@ class Omni():
                 value: filter/param value.
                 pattern_name (optional): change a specific pattern's parameter.
         '''
-        pattern_name = r.get("pattern").decode()
-        command = "/%s" % pattern_name
-        control = "setParam"
-        parameter = param_name
-        print('sending:')
-        print(command, control, parameter, value)
-        OscMessageSender.send_message(
-            command, control, parameter, value)
+        self.osc_interface.active_pattern.sync_param(param_name, value)
 
     def active_patch(self):
         """
