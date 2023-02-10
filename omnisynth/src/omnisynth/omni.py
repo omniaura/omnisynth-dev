@@ -9,12 +9,15 @@ Python 3.7.x
 from submodules.osc_message_sender import OscMessageSender
 from submodules.osc_interface import OscInterface
 from submodules.patch import Patch
+from submodules.value_converter import ValueConverter
+
 import platform
 import redis
 import json
 import numpy as np
 import os
 import ast
+import psutil
 
 r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
@@ -23,6 +26,13 @@ if platform.system() == 'Linux':
     OS = 'Linux'
 elif platform.system() == 'Darwin':
     OS = 'Darwin'
+
+if 'Darwin' in OS or 'Linux' in OS:  # Mac or Linux
+    OMNISYNTH_PATH = os.getcwd().replace(
+        'omnisynth-dev/omnisynth/src/omnisynth', 'omnisynth-dsp/')
+else:  # Windows
+    OMNISYNTH_PATH = os.getcwd().replace(
+        'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
 
 # Used for sending / receiving data from supercollider.
 # when import omnisynth is called (for production)
@@ -46,9 +56,6 @@ class Omni():
         # current pattern selected.
         self.pattern = "pattern1"
         r.set("pattern", self.pattern)
-
-        # Variables For GUI.
-        self.mapMode = False
 
     def compile_patches(self, folder, parentDir=''):
         """
@@ -81,43 +88,46 @@ class Omni():
     def song_sel(self, song_name):
         self.song = song_name
 
-    # toggles and controls patterns created in supercollider
-    # TODO: refactor me
-    def pattern_sel(self, pattern_name, action, *args):
-        if not len(args) == 0:
-            parentDir = args[0]
-            directory = parentDir + \
-                "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
+    def start_pattern(self, pattern_name):
+        self.osc_interface.pattern_collection.find_or_add_pattern(
+            pattern_name).start()
+
+    def stop_pattern(self, pattern_name):
+        self.osc_interface.pattern_collection.find_or_add_pattern(
+            pattern_name).stop()
+
+    def start_sc_process(self):
+        sc_main = OMNISYNTH_PATH + "main.scd"
+
+        if OS == 'Windows':
+            subprocess.Popen(["sclang", sc_main])
         else:
-            directory = "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
-        path = os.path.abspath(directory).replace("\\", "/")
-        if action == 'compile':
-            OscMessageSender.send_omni_message("compile", path)
-            OscMessageSender.send_omni_message("controlPattern", action, path)
-        else:  # start / stop
-            OscMessageSender.send_client_message(
-                f"/{pattern_name}", "playerSel", action)
+            subprocess.Popen(
+                ["/Applications/SuperCollider.app/Contents/MacOS/sclang", sc_main])
 
-        self.pattern = pattern_name
-        r.set("pattern", self.pattern)
-
-    def stop_sc_synth(self):
+    def stop_sc_processes(self):
         """
-        Stops the ScSynth process
+        Stops the ScSynth and sclang processes
         """
         OscMessageSender.send_omni_message('stopScSynth')
+        sc_lang_process_name = "sclang.exe"
+        sc_synth_process_name = "scsynth.exe"
+        process_names = [
+            "sclang.exe",
+            "scsynth.exe"
+        ]
+        for proc in psutil.process_iter():
+            if proc.name() in process_names:
+                proc.kill()
 
-    def sc_server_boot_status(self):
+    def sc_server_booted(self):
         """
         The status of the SuperCollider server
 
         Returns:
             str: 'Running' if the server is running, 'Stopped' if the server is stopped
         """
-        if self.osc_interface.super_collider_booted:
-            return 'Running'
-
-        return 'Stopped'
+        return self.osc_interface.super_collider_booted
 
     def set_active_patch_param_value(self, param_name, value):
         """
@@ -127,8 +137,9 @@ class Omni():
             param_name (String): the name of the parameter
             value (number): the value of the parameter
         """
+        real_value = ValueConverter.converted_value(param_name, value)
         self.osc_interface.patch_collection.active_patch.sync_param(
-            param_name, value)
+            param_name, real_value)
 
     # TODO: refactor me
     def pattern_param_sel(self, param_name, value):
@@ -191,7 +202,8 @@ class Omni():
             chan (number): the knob channel
             param_name (str): the patch parameter name to map this knob to
         """
-        self.osc_interface.map_knob_to_filter_name(src, chan, param_name)
+        self.osc_interface.knob_collection.set_knob_filter_name(
+            src, chan, param_name)
 
     # opens UDP stream for MIDI control messages.
     def open_stream(self, *args):
@@ -199,6 +211,9 @@ class Omni():
 
     def set_midi_learn(self, on):
         self.osc_interface.midi_learn_on = on
+
+    def current_control_event(self):
+        self.osc_interface.current_control_event
 
 
 """
@@ -211,30 +226,18 @@ if __name__ == "__main__":
     '''
     import subprocess
     from threading import Thread
-    # get omnisynth-dsp path
-    if 'Darwin' in OS or 'Linux' in OS:  # Mac or Linux
-        OMNISYNTH_PATH = os.getcwd().replace(
-            'omnisynth-dev/omnisynth/src/omnisynth', 'omnisynth-dsp/')
-    else:  # Windows
-        OMNISYNTH_PATH = os.getcwd().replace(
-            'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
 
     OmniSynth = Omni()
     OmniSynth.set_midi_learn(True)  # turn on midi learn.
-    sc_main = OMNISYNTH_PATH + "main.scd"
 
     def sc_thread():
-        if 'Darwin' in OS:
-            subprocess.Popen(
-                ["/Applications/SuperCollider.app/Contents/MacOS/sclang", sc_main])
-        else:
-            subprocess.Popen(["sclang", sc_main])
+        OmniSynth.start_sc_process()
 
     def omni_thread():
         compiled = False
         while (True):
             OmniSynth.open_stream()
-            if OmniSynth.sc_server_boot_status() == 'Running':
+            if OmniSynth.sc_server_booted():
                 if not compiled:
                     # compiles all synthDefs.
                     OmniSynth.compile_patches(

@@ -32,6 +32,7 @@ from .teensy_midi_handler import TeensyMidiHandler
 from .knob_collection import KnobCollection
 from .output_device_collection import OutputDeviceCollection
 from .patch_collection import PatchCollection
+from .pattern_collection import PatternCollection
 
 from .patch import Patch
 
@@ -48,16 +49,21 @@ class OscInterface:
         self.midi_handler = TeensyMidiHandler()
         self.note_evnt_hist = dict()
 
-        self.active_patch = None
+        self.current_control_event = [None, None, None]
 
         # track running state of super collider server
         self.super_collider_booted = False
 
         # our patches
         self.patch_collection = PatchCollection()
+        self.active_patch = None
 
         # knobs
         self.knob_collection = KnobCollection()
+
+        # patterns
+        self.pattern_collection = PatternCollection()
+        self.active_pattern = None
 
         # array holding our output devices
         self.output_devices = OutputDeviceCollection()
@@ -84,9 +90,6 @@ class OscInterface:
 
     def process_midi_event(self):
         asyncio.run(self.init_main())
-
-    def map_knob_to_filter_name(self, src, chan, filter_name):
-        self.knob_collection.set_knob_filter_name(src, chan, filter_name)
 
     def set_active_patch(self, patch_filename):
         """
@@ -128,6 +131,8 @@ class OscInterface:
         val = command_args[1]
         src = command_args[2]
         chan = command_args[3]
+
+        self.current_control_event = [val, src, chan]
 
         knob = self.knob_collection.find_or_add_knob(src, chan)
 

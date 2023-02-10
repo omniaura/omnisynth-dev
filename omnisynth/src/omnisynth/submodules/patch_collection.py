@@ -4,7 +4,6 @@ from .patch import Patch
 
 
 class PatchCollection:
-
     def __init__(self):
         self.patches = []
 
@@ -27,24 +26,6 @@ class PatchCollection:
         patch.compile()
         self.patches.append(patch)
         return patch
-
-    def contains_patch(self, filename):
-        """
-        Returns true if this PatchCollection contains a patch with the given filename,
-        and false otherwise
-
-        Args:
-            filename (str): the filename of the patch
-
-        Returns:
-            bool: true if this PatchCollection contains a patch with the given filename,
-                  false otherwise
-        """
-
-        for patch in self.patches:
-            if patch.filename == filename:
-                return True
-        return False
 
     def patch_count(self):
         return len(patches)
