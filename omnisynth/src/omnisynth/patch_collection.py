@@ -1,6 +1,6 @@
 import os
-from .osc_message_sender import OscMessageSender
-from .patch import Patch
+from omnisynth.osc_message_sender import OscMessageSender
+from omnisynth.patch import Patch
 
 
 class PatchCollection:

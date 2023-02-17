@@ -1,4 +1,4 @@
-from .knob import Knob
+from omnisynth.knob import Knob
 
 
 class KnobCollection:

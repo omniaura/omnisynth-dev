@@ -1,6 +1,6 @@
 import os
-from .value_converter import ValueConverter
-from .osc_message_sender import OscMessageSender
+from omnisynth.value_converter import ValueConverter
+from omnisynth.osc_message_sender import OscMessageSender
 
 
 class Patch:

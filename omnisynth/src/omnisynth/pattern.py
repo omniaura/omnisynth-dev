@@ -1,5 +1,5 @@
 import os
-from .osc_message_sender import OscMessageSender
+from omnisynth.osc_message_sender import OscMessageSender
 
 
 class Pattern:

@@ -6,20 +6,18 @@ author: Omar Barazanji (omar@omniaura.co)
 Python 3.7.x
 """
 
-from submodules.osc_message_sender import OscMessageSender
-from submodules.osc_interface import OscInterface
-from submodules.patch import Patch
-from submodules.value_converter import ValueConverter
+from omnisynth.osc_message_sender import OscMessageSender
+from omnisynth.osc_interface import OscInterface
+from omnisynth.patch import Patch
+from omnisynth.value_converter import ValueConverter
 
 import platform
-import redis
 import json
 import numpy as np
 import os
 import ast
 import psutil
-
-r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
+import subprocess
 
 OS = 'Windows'
 if platform.system() == 'Linux':
@@ -31,15 +29,9 @@ if 'Darwin' in OS or 'Linux' in OS:  # Mac or Linux
     OMNISYNTH_PATH = os.getcwd().replace(
         'omnisynth-dev/omnisynth/src/omnisynth', 'omnisynth-dsp/')
 else:  # Windows
-    OMNISYNTH_PATH = os.getcwd().replace(
-        'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
-
-# Used for sending / receiving data from supercollider.
-# when import omnisynth is called (for production)
-# # when running locally before building wheel (for testing)
-# from .omnimidi import OmniMidi
-# from .osc_interface import OscInterface
-# from .osc_message_sender import OscMessageSender
+   # OMNISYNTH_PATH = os.getcwd().replace(
+    # 'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
+    OMNISYNTH_PATH = "D:/Programming/omnisynth-dsp/"
 
 
 class Omni():
@@ -48,14 +40,6 @@ class Omni():
         # initialize OSC module for UDP communication with Supercollider.
         self.osc_interface = OscInterface()
         self.osc_interface.map_commands_to_dispatcher()
-
-        # current song selected.
-        self.song = "song1"
-        r.set('song', self.song)
-
-        # current pattern selected.
-        self.pattern = "pattern1"
-        r.set("pattern", self.pattern)
 
     def compile_patches(self, folder, parentDir=''):
         """
@@ -94,6 +78,7 @@ class Omni():
     def start_sc_process(self):
         sc_main = OMNISYNTH_PATH + "main.scd"
 
+        print('Opening sclang...')
         if OS == 'Windows':
             subprocess.Popen(["sclang", sc_main])
         else:
@@ -104,7 +89,9 @@ class Omni():
         """
         Stops the ScSynth and sclang processes
         """
-        OscMessageSender.send_omni_message('stopScSynth')
+        # Only send "stopScSynth" message if sc server is booted
+        if self.sc_server_booted():
+            OscMessageSender.send_omni_message('stopScSynth')
         sc_lang_process_name = "sclang.exe"
         sc_synth_process_name = "scsynth.exe"
         process_names = [

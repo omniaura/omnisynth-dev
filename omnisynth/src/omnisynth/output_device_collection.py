@@ -1,5 +1,5 @@
-from .output_device import OutputDevice
-from .osc_message_sender import OscMessageSender
+from omnisynth.output_device import OutputDevice
+from omnisynth.osc_message_sender import OscMessageSender
 
 
 class OutputDeviceCollection:

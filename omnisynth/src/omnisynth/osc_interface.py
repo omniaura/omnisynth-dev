@@ -28,16 +28,13 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 
 import asyncio
 import time
-from .teensy_midi_handler import TeensyMidiHandler
-from .knob_collection import KnobCollection
-from .output_device_collection import OutputDeviceCollection
-from .patch_collection import PatchCollection
-from .pattern_collection import PatternCollection
+from omnisynth.teensy_midi_handler import TeensyMidiHandler
+from omnisynth.knob_collection import KnobCollection
+from omnisynth.output_device_collection import OutputDeviceCollection
+from omnisynth.patch_collection import PatchCollection
+from omnisynth.pattern_collection import PatternCollection
 
-from .patch import Patch
-
-import redis
-r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
+from omnisynth.patch import Patch
 
 DELAY_MS = 50
 
