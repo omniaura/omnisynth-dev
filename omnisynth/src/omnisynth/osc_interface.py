@@ -28,6 +28,7 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 
 import asyncio
 import time
+from omnisynth.osc_message_sender import OscMessageSender
 from omnisynth.teensy_midi_handler import TeensyMidiHandler
 from omnisynth.knob_collection import KnobCollection
 from omnisynth.output_device_collection import OutputDeviceCollection
@@ -148,19 +149,19 @@ class OscInterface:
             knob.set_value(val, src, chan)
 
         if knob.filter_name != '':
-            self.patch_collection.active_patch.sync_param(
+            self.active_patch.sync_param(
                 knob.filter_name, val)
 
     def handle_init_patch_params(self, *command_args):
         """
         Processes a /initPatchParams message
         """
-        patch_filename = command_args[1]
+        patch_name = command_args[1]
         param_num = command_args[2]
         param_name = command_args[3]
         param_default_val = command_args[4]
 
-        patch = self.patch_collection.find_or_add_patch(patch_filename)
+        patch = self.patch_collection.find_patch_by_name(patch_filename)
         patch.set_param_initial_value(param_name, param_default_val)
 
     def handle_set_output_devices(self, *command_args):
@@ -180,6 +181,7 @@ class OscInterface:
         print('Done setting output devices')
 
     def handle_super_collider_status(self, *command_args):
+        print(command_args)
         if command_args[1] == 'running':
             print(f'Setting supercollider server status to running...')
             self.super_collider_booted = True

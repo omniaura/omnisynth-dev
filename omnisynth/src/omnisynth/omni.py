@@ -140,7 +140,7 @@ class Omni():
         Returns:
             Patch: the currently active patch
         """
-        return self.osc_interface.patch_collection.active_patch
+        return self.osc_interface.active_patch
 
     def set_active_patch(self, patch_filename):
         """
@@ -149,7 +149,7 @@ class Omni():
         Args:
             patch_filename (str): the filename of the patch
         """
-        self.osc_interface.patch_collection.set_active_patch(patch_filename)
+        self.osc_interface.set_active_patch(patch_filename)
 
     def midi_learn(self, midi_msg):
         """

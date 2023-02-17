@@ -1,5 +1,4 @@
 import os
-from omnisynth.osc_message_sender import OscMessageSender
 from omnisynth.patch import Patch
 
 
@@ -27,5 +26,9 @@ class PatchCollection:
         self.patches.append(patch)
         return patch
 
+    def find_patch_by_name(self, patch_name):
+        return next(
+            (patch for patch in self.patches if patch.name == patch_name), None)
+
     def patch_count(self):
-        return len(patches)
+        return len(self.patches)

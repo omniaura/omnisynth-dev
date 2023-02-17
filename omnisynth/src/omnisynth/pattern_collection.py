@@ -1,5 +1,4 @@
 import os
-from omnisynth.osc_message_sender import OscMessageSender
 from omnisynth.pattern import Pattern
 
 
