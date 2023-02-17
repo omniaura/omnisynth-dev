@@ -161,7 +161,7 @@ class OscInterface:
         param_name = command_args[3]
         param_default_val = command_args[4]
 
-        patch = self.patch_collection.find_patch_by_name(patch_filename)
+        patch = self.patch_collection.find_patch_by_name(patch_name)
         patch.set_param_initial_value(param_name, param_default_val)
 
     def handle_set_output_devices(self, *command_args):
