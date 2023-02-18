@@ -146,7 +146,7 @@ class OscInterface:
         knob = self.knob_collection.find_or_add_knob(src, chan)
 
         if self.midi_learn_on:
-            knob.set_value(val, src, chan)
+            knob.set_value(val)
 
         if knob.filter_name != '':
             self.active_patch.sync_param(
@@ -181,7 +181,6 @@ class OscInterface:
         print('Done setting output devices')
 
     def handle_super_collider_status(self, *command_args):
-        print(command_args)
         if command_args[1] == 'running':
             print(f'Setting supercollider server status to running...')
             self.super_collider_booted = True

@@ -92,8 +92,6 @@ class Omni():
         # Only send "stopScSynth" message if sc server is booted
         if self.sc_server_booted():
             OscMessageSender.send_omni_message('stopScSynth')
-        sc_lang_process_name = "sclang.exe"
-        sc_synth_process_name = "scsynth.exe"
         process_names = [
             "sclang.exe",
             "scsynth.exe"
@@ -119,7 +117,8 @@ class Omni():
             param_name (String): the name of the parameter
             value (number): the value of the parameter
         """
-        real_value = ValueConverter.converted_value(param_name, value)
+        real_value = ValueConverter.to_normalized_value(param_name, value)
+        print(f'Setting value of {param_name} to {real_value}...')
         self.osc_interface.active_patch.sync_param(
             param_name, real_value)
 
@@ -187,7 +186,7 @@ class Omni():
         self.osc_interface.midi_learn_on = on
 
     def current_control_event(self):
-        self.osc_interface.current_control_event
+        return self.osc_interface.current_control_event
 
 
 """

@@ -5,7 +5,7 @@ class KnobCollection:
     def __init__(self):
         self.knobs = []
 
-    def set_knob_value(self, src, chan, value):
+    def set_knob_value(self, value, src, chan):
         # set knob value given its src and channel
         # if the knob currently doesnt exist within our knob collection, add it
         knob = self.find_or_add_knob(src, chan)

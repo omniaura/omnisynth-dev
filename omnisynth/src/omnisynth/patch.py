@@ -24,18 +24,6 @@ class Patch:
 
         self.compiled = True
 
-    def get_interpolated_param_value(self, param_name):
-        """
-        Retrieve the real MIDI value of the given parameter for this patch
-
-        Args:
-            param_name (String): the parameter name
-
-        Returns:
-            Number: the real MIDI value of the parameter
-        """
-        return ValueConverter.converted_value(param_name, self.params[param_name])
-
     def set_param_initial_value(self, param_name, param_value):
         """
         Adds the parameter to this patch if not already added, and sets the value to the given value.
@@ -57,9 +45,10 @@ class Patch:
         if not self.compiled:
             self.compile()
 
+        print(f'Syncing param to OSC: {param_name}: {param_value}')
         self.params[param_name] = param_value
         OscMessageSender.send_client_message(
-            f"/{self.filename}", "setParam", param_name, param_value)
+            f"/{self.name}", "setParam", param_name, param_value)
 
     def __eq__(self, obj):
         return isinstance(obj, Patch) and obj.filename == self.filename
