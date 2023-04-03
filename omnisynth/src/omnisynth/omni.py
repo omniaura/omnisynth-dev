@@ -25,13 +25,12 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     OS = 'Darwin'
 
-if 'Darwin' in OS or 'Linux' in OS:  # Mac or Linux
-    OMNISYNTH_PATH = os.getcwd().replace(
-        'omnisynth-dev/omnisynth/src/omnisynth', 'omnisynth-dsp/')
-else:  # Windows
-   # OMNISYNTH_PATH = os.getcwd().replace(
-    # 'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
-    OMNISYNTH_PATH = "D:/Programming/omnisynth-dsp/"
+# if 'Darwin' in OS or 'Linux' in OS:  # Mac or Linux
+OMNISYNTH_PATH = os.getcwd().replace('omnisynth-dev/omnisynth/src/omnisynth', 'omnisynth-dsp/')
+# else:  # Windows
+#    # OMNISYNTH_PATH = os.getcwd().replace(
+#     # 'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
+#     OMNISYNTH_PATH = "D:/Programming/omnisynth-dsp/"
 
 
 class Omni():
