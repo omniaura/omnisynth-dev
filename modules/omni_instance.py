@@ -2,16 +2,12 @@
 Single omni instance for the server to use and handle state (service).
 '''
 
+import redis
 from omnisynth import omni
 from constants import OMNISYNTH_PATH
 
-OMNISYNTH_PATH = OMNISYNTH_PATH.replace("/modules","")    
+OMNISYNTH_PATH = OMNISYNTH_PATH.replace("/modules", "")
 
-
-import redis
-
-# moved to inside osc handler in omnisynth
-# r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
 
 class OmniInstance:
 
@@ -19,8 +15,7 @@ class OmniInstance:
         self.OmniSynth = omni.Omni()
 
     def compile_patches(self):
-        self.OmniSynth.sc_compile(OMNISYNTH_PATH+"patches")
-        # r.set('patchTable', str(table))
+        self.OmniSynth.compile_patches(OMNISYNTH_PATH+"patches")
 
     def open(self):
         self.OmniSynth.midi_learn_on = True

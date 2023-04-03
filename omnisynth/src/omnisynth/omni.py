@@ -6,245 +6,123 @@ author: Omar Barazanji (omar@omniaura.co)
 Python 3.7.x
 """
 
-import redis
+from omnisynth.osc_message_sender import OscMessageSender
+from omnisynth.osc_interface import OscInterface
+from omnisynth.patch import Patch
+from omnisynth.value_converter import ValueConverter
+
+import platform
 import json
 import numpy as np
 import os
 import ast
+import psutil
+import subprocess
 
-r = redis.Redis.from_url(url='redis://127.0.0.1:6379/0')
-
-import platform
 OS = 'Windows'
 if platform.system() == 'Linux':
     OS = 'Linux'
 elif platform.system() == 'Darwin':
     OS = 'Darwin'
 
-# Used for sending / receiving data from supercollider.
-try:
-    # when import omnisynth is called (for production)
-    from .submodules.omnimidi import OmniMidi
-    from .submodules.osc import OmniCollider
-except:
-    # when running locally before building wheel (for testing)
-    from submodules.omnimidi import OmniMidi
-    from submodules.osc import OmniCollider
+if 'Darwin' in OS or 'Linux' in OS:  # Mac or Linux
+    OMNISYNTH_PATH = os.getcwd().replace(
+        'omnisynth-dev/omnisynth/src/omnisynth', 'omnisynth-dsp/')
+else:  # Windows
+   # OMNISYNTH_PATH = os.getcwd().replace(
+    # 'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
+    OMNISYNTH_PATH = "D:/Programming/omnisynth-dsp/"
+
 
 class Omni():
 
     def __init__(self):
-
         # initialize OSC module for UDP communication with Supercollider.
-        self.sc = OmniCollider()
-        self.sc.map_dispatcher("/control")
-        self.sc.map_dispatcher("/noteOn")
-        self.sc.map_dispatcher("/noteOff")
-        self.sc.map_dispatcher("/params")
-        self.sc.map_dispatcher("/outDev")
-        self.sc.map_dispatcher("/server")
+        self.osc_interface = OscInterface()
+        self.osc_interface.map_commands_to_dispatcher()
 
-        # current synth selected.
-        self.synth = "tone1"
-        r.set('synth', self.synth)
+    def compile_patches(self, folder, parentDir=''):
+        """
+        Compile patches within a directory
 
-        # current song selected.
-        self.song = "song1"
-        r.set('song', self.song)
+        Args:
+            folder (str): the folder that contains the patch files
+            parentDir (str, optional): the parent directory of the folder. defaults to ''
 
-        # current pattern selected.
-        self.pattern = "pattern1"
-        r.set("pattern", self.pattern)
-
-        # holds control events from UDP stream.
-        self.control_evnt = []
-
-        # holds note on / off events from UDP stream.
-        self.note_evnt = []
-
-        # used for turning on midi learn.
-        self.midi_learn_on = False
-
-        # holds all control knobs and their values.
-        #     organization: self.knob_table[knob_addr] = value
-        #     where knob_addr = (src, chan) from the MIDI cc knob.
-        self.knob_table = dict()
-        r.delete('knobTable')
-
-        # holds all knob mappings to SC params.
-        #     organization: self.knob_map[knob_addr] = filter_name.
-        self.knob_map = dict()
-        r.delete('mapKnob')
-
-        # holds history of last value sent through the UDP stream to SC.
-        #     organization: self.knob_map_hist[filter_name] = value.
-        self.knob_map_hist = dict()
-
-        self.note_evnt_hist = dict()
-
-        # Table that will be outputted to DAC & Mux.
-        self.cv_table = [[0 for x in range(8)] for y in range(4)]
-
-        # LUT for freq control messages, maps 0-127 to 20 - 20000 Hz.
-        self.cc_to_freq = np.linspace(20, 20000, 128).tolist()
-
-        # LUT for adsr control messages, maps 0-127 to .001 - 1 (seconds or amplitude).
-        self.cc_to_adsr = np.linspace(0.001, 2, 128).tolist()
-
-        # LUT for linear envelope params.
-        self.cc_to_lin = np.linspace(1, 3000, 128).tolist()
-
-        # LUT for duration.
-        self.cc_to_duration = np.linspace(0.001, 5, 128).tolist()
-
-        # Variables For GUI.
-        self.mapMode = False
-        self.numPatch = 0
-        self.patchIndex = 0  # indexes for quick select on main screen
-        self.patchListIndex = dict()
-        self.patternListIndex = dict()
-
-        # all possible synth params.
-        self.param_table = [
-            "attack", "decay", "sustain", "release",
-            "lpf", "hpf", "mod_freq", "lin_start",
-            "lin_stop", "lin_duration"
-        ]
-
-    def value_map(self, filt, inp):
-        value = inp
-        if filt == "lpf" or filt == "hpf":
-            value = self.cc_to_freq[int(inp)]
-        if filt == "attack" or filt == "decay" or filt == "sustain" or filt == "release":
-            value = self.cc_to_adsr[int(inp)]
-        if filt == "lin_start" or filt == "lin_stop":
-            value = self.cc_to_lin[int(inp)]
-        if filt == "lin_duration":
-            value = self.cc_to_duration[int(inp)]
-        return value
-
-    # opens UDP stream for MIDI control messages.
-    def open_stream(self, *args):
-        self.sc.receive()
-        try:
-            # grab first index (tag) if it exists
-            event = self.sc.midi_evnt[0]
-        except IndexError:
-            event = ""
-
-        if event == "/control":
-            # save entire message
-            self.control_evnt = self.sc.midi_evnt
-            if self.midi_learn_on:
-                self.midi_learn(self.control_evnt)
-
-            try:
-                self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
-                knob_table = json.loads(r.get('knobTable'))
-            except:
-                self.knob_map = dict()
-
-            if len(self.knob_map) != 0:
-                for knob_addr in self.knob_map:
-                    filter_name = self.knob_map[knob_addr]
-                    try:
-                        raw_value = knob_table[str(knob_addr[0])][str(knob_addr[1])]['val']
-                    except:
-                        break
-                    self.filter_sel(filter_name, raw_value)
-            self.sc.midi_evnt = []
-
-    # compiles all synthDef's in dsp folder.
-    def sc_compile(self, typeDef, *args):
-
-        if not len(args) == 0:
-            parentDir = args[0]
-            directory = parentDir + "%s/" % typeDef
+        Returns:
+            PatchCollection: the collection of compiled patches
+        """
+        if len(parentDir) != 0:
+            directory = parentDir + "%s/" % folder
         else:
-            directory = "%s/" % typeDef
-        command = "/omni"
-        control = "compile"
+            directory = "%s/" % folder
+
+        # Add all patches via filenames through our osc_interface#add_patch method
         for patch in os.listdir(directory):
             filedir = directory + patch
-            path = os.path.abspath(filedir).replace("\\", "/")
-            self.sc.transmit(command, control, path)
-        return self.sc.patch_param_table
+            patch_filename = os.path.abspath(filedir).replace("\\", "/")
+            self.osc_interface.patch_collection.find_or_add_patch(
+                patch_filename)
 
-    # saves state of which song is currently selected.
-    def song_sel(self, song_name):
-        self.song = song_name
+        # Return the patches we have compiled
+        return self.osc_interface.patch_collection
 
-    # toggles and controls patterns created in supercollider
-    def pattern_sel(self, pattern_name, action, *args):
-        if not len(args) == 0:
-            parentDir = args[0]
-            directory = parentDir + \
-                "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
+    def start_pattern(self, pattern_name):
+        self.osc_interface.pattern_collection.find_or_add_pattern(
+            pattern_name).start()
+
+    def stop_pattern(self, pattern_name):
+        self.osc_interface.pattern_collection.find_or_add_pattern(
+            pattern_name).stop()
+
+    def start_sc_process(self):
+        sc_main = OMNISYNTH_PATH + "main.scd"
+
+        print('Opening sclang...')
+        if OS == 'Windows':
+            subprocess.Popen(["sclang", sc_main])
         else:
-            directory = "patterns/songs/%s/%s.scd" % (self.song, pattern_name)
-        path = os.path.abspath(directory).replace("\\", "/")
-        if action == 'compile':
-            command = "/omni"
-            control = "pdef_control"
-            self.sc.transmit(command, "compile", path)
-            self.sc.transmit(command, control, action, path)
-        else: # start / stop 
-            command = f"/{pattern_name}"
-            control = "playerSel"
-            self.sc.transmit(command, control, action)
+            subprocess.Popen(
+                ["/Applications/SuperCollider.app/Contents/MacOS/sclang", sc_main])
 
-        self.pattern = pattern_name
-        r.set("pattern", self.pattern)
+    def stop_sc_processes(self):
+        """
+        Stops the ScSynth and sclang processes
+        """
+        # Only send "stopScSynth" message if sc server is booted
+        if self.sc_server_booted():
+            OscMessageSender.send_omni_message('stopScSynth')
+        process_names = [
+            "sclang.exe",
+            "scsynth.exe"
+        ]
+        for proc in psutil.process_iter():
+            if proc.name() in process_names:
+                proc.kill()
 
-    # turns on / off synthDef's from SC.
-    def synth_sel(self, synth_name, *args):
-        if not len(args) == 0:
-            parentDir = args[0]
-            directory = parentDir + "patches/%s.scd" % synth_name
-        else:
-            directory = "patches/%s.scd" % synth_name
-        command = "/omni"
-        control = "synthSel"
-        self.synth = synth_name
-        r.set('synth', self.synth)
-        synth_path = os.path.abspath(directory).replace("\\", "/")
-        self.sc.transmit(command, control, synth_name, synth_path)
+    def sc_server_booted(self):
+        """
+        The status of the SuperCollider server
 
-    def exit_sel(self):
-        command = "/omni"
-        control = "exitSel"
-        self.sc.transmit(command, control)
+        Returns:
+            str: 'Running' if the server is running, 'Stopped' if the server is stopped
+        """
+        return self.osc_interface.super_collider_booted
 
-    def out_dev_sel(self, dev_num):
-        command = "/omni"
-        control = "outDevSel"
-        if dev_num not in self.sc.out_dev_table:
-            print(
-                f'[ERROR] in #out_dev_sel: Error when selecting device {dev_num}: Device not found')
-            return
-        dev_name = self.sc.out_dev_table[dev_num]
-        self.sc.transmit(command, control, dev_name)
+    def set_active_patch_param_value(self, param_name, value):
+        """
+        Change a parameter value for the currently active patch
 
-   
-    def filter_sel(self, filter_name, value):
-        '''
-        change a synth's filter/param value.
-            params:
-                filter_name: select filter/param.
-                value: filter/param value.
-        '''
-        synth = r.get('synth').decode()
-        command = "/%s" % synth
-        control = "filterSel"
-        real_value = self.value_map(filter_name, value)
-        if filter_name in self.knob_map_hist and self.knob_map_hist[filter_name] != value:
-            self.sc.transmit(command, control, filter_name, real_value)
-            self.knob_map_hist[filter_name] = value
-        elif filter_name not in self.knob_map_hist:  # if first instance
-            self.sc.transmit(command, control, filter_name, real_value)
-            self.knob_map_hist[filter_name] = value
+        Args:
+            param_name (String): the name of the parameter
+            value (number): the value of the parameter
+        """
+        real_value = ValueConverter.to_normalized_value(param_name, value)
+        print(f'Setting value of {param_name} to {real_value}...')
+        self.osc_interface.active_patch.sync_param(
+            param_name, real_value)
 
-    def pattern_param_sel(self, param_name, value):
+    def set_active_pattern_param_value(self, param_name, value):
         '''
         change a patterns's param value.
             params:
@@ -252,89 +130,98 @@ class Omni():
                 value: filter/param value.
                 pattern_name (optional): change a specific pattern's parameter.
         '''
-        pattern_name = r.get("pattern").decode()
-        command = "/%s" % pattern_name
-        control = "paramSel"
-        parameter = param_name
-        print('sending:')
-        print(command, control, parameter, value)
-        self.sc.transmit(command, control, parameter, value)
+        self.osc_interface.active_pattern.sync_param(param_name, value)
 
+    def active_patch(self):
+        """
+        Retrieves the currently active Patch
 
-    # creates dict for all control knobs on MIDI controller.
+        Returns:
+            Patch: the currently active patch
+        """
+        return self.osc_interface.active_patch
+
+    def set_active_patch(self, patch_filename):
+        """
+        Sets the currently active patch. Compiles the patch if not already compiled
+
+        Args:
+            patch_filename (str): the filename of the patch
+        """
+        self.osc_interface.set_active_patch(patch_filename)
+
     def midi_learn(self, midi_msg):
-        if len(midi_msg) == 4:
-            val = midi_msg[1]
-            src = midi_msg[2]
-            chan = midi_msg[3]
-            knob_arr = {chan : {'val' : val}}
-            if src in self.knob_table.keys():
-                if chan in self.knob_table[src].keys():
-                    self.knob_table[src][chan]['val'] = val
-                else:
-                    self.knob_table[src][chan] = {'val' : val}
-            else:
-                self.knob_table[src] = knob_arr
-            r.set('knobTable', json.dumps(self.knob_table))
+        """
+        Set a knob value from a MIDI message
 
-    
-    def map_knob(self, knob_addr, filter_name):
-        '''
-        maps a knob to an SC parameter.
-            params:
-                knob_addr = (src, chan)
-                filter_name = "lpf" (for example)
-        '''
-        try:
-            self.knob_map = ast.literal_eval(r.get('mapKnob').decode())
-        except:
-            self.knob_map = dict()
-        self.knob_map[knob_addr] = filter_name
-        r.set('mapKnob', str(self.knob_map))
+        Args:
+            midi_msg (list): the midi message
+        """
+        if len(midi_msg) != 4:
+            return
 
-# Quickly maps a table of param names to all knobs needed.
-def quick_map(OmniSynth):
-    itr = 0
-    for key, value in OmniSynth.knob_table.items():
-        OmniSynth.map_knob(key, OmniSynth.param_table[itr])
-        itr += 1
-        if itr == len(OmniSynth.param_table):
-            break
+        val = midi_msg[1]
+        src = midi_msg[2]
+        chan = midi_msg[3]
 
+        self.osc_interface.knob_collection.set_knob_value(val, src, chan)
+
+    def map_knob(self, src, chan, param_name):
+        """
+        Map a knob to a patch parameter name
+
+        Args:
+            src (number): the knob src
+            chan (number): the knob channel
+            param_name (str): the patch parameter name to map this knob to
+        """
+        self.osc_interface.knob_collection.set_knob_filter_name(
+            src, chan, param_name)
+
+    # opens UDP stream for MIDI control messages.
+    def open_stream(self, *args):
+        self.osc_interface.process_midi_event()
+
+    def set_midi_learn(self, on):
+        self.osc_interface.midi_learn_on = on
+
+    def current_control_event(self):
+        return self.osc_interface.current_control_event
+
+
+"""
+Main entrypoint
+Initializes main Omni process and listeners
+"""
 if __name__ == "__main__":
     '''
     For testing run `python -i omni.py` to get access to all OmniSynth functions while SC runs.
     '''
     import subprocess
     from threading import Thread
-    # get omnisynth-dsp path
-    if 'Darwin' in OS or 'Linux' in OS: # Mac or Linux
-        OMNISYNTH_PATH = os.getcwd().replace(   
-            'omnisynth-dev/omnisynth/src/omnisynth', 'omnisynth-dsp/')
-    else: # Windows
-        OMNISYNTH_PATH = os.getcwd().replace(   
-            'omnisynth-dev\\omnisynth\\src\\omnisynth', 'omnisynth-dsp/').replace("\\", "/")
 
     OmniSynth = Omni()
-    OmniSynth.sc_compile(OMNISYNTH_PATH+"/patches") # compiles all synthDefs.
-    OmniSynth.synth_sel("tone1", OMNISYNTH_PATH) # selects first patch.
-    OmniSynth.midi_learn_on = True # turn on midi learn.
-    sc_main = OMNISYNTH_PATH + "main.scd"
+    OmniSynth.set_midi_learn(True)  # turn on midi learn.
 
     def sc_thread():
-        if 'Darwin' in OS: subprocess.Popen(["/Applications/SuperCollider.app/Contents/MacOS/sclang", sc_main])
-        else: subprocess.Popen(["sclang", sc_main])
+        OmniSynth.start_sc_process()
+
     def omni_thread():
+        compiled = False
         while (True):
             OmniSynth.open_stream()
-    
+            if OmniSynth.sc_server_booted():
+                if not compiled:
+                    # compiles all synthDefs.
+                    OmniSynth.compile_patches(
+                        OMNISYNTH_PATH+"patches")
+                    OmniSynth.set_active_patch(
+                        OMNISYNTH_PATH + "patches/tone1.scd")
+                    compiled = True
+
     omnithread = Thread(target=omni_thread)
     omnithread.start()
+
     scthread = Thread(target=sc_thread)
     scthread.start()
     scthread.join()
-
-    def pattern_test():
-        OmniSynth.synth_sel("tone1", OMNISYNTH_PATH)
-        OmniSynth.synth_sel("tone3", OMNISYNTH_PATH)
-        OmniSynth.pattern_sel("pattern1", "start", OMNISYNTH_PATH)
